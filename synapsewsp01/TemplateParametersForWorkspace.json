@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "synapsewsp01"
+		},
+		"AzureSql_sample_sql_instance_connectionString": {
+			"value": ""
+		},
+		"synapsewsp01-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://synapsews01adls2.dfs.core.windows.net"
+		}
+	}
+}

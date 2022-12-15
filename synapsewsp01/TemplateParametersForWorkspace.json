@@ -9,7 +9,7 @@
 			"value": ""
 		},
 		"synapsewsp01-WorkspaceDefaultSqlServer_connectionString": {
-			"value": ""
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsewsp01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
 		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://synapsews01adls2.dfs.core.windows.net"

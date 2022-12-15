@@ -64,13 +64,13 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "SourceDataset_2pr",
+						"referenceName": "SourceDataset_nyctaxidata",
 						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
 					{
-						"referenceName": "DestinationDataset_2pr",
+						"referenceName": "DestinationDataset__nyctaxidata",
 						"type": "DatasetReference"
 					}
 				]

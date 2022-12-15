@@ -1,5 +1,5 @@
 {
-	"name": "DestinationDataset_2pr",
+	"name": "DestinationDataset__nyctaxidata",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "synapsewsp01-WorkspaceDefaultStorage",

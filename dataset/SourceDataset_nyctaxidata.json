@@ -1,5 +1,5 @@
 {
-	"name": "SourceDataset_2pr",
+	"name": "SourceDataset_nyctaxidata",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage_TaxiSample",

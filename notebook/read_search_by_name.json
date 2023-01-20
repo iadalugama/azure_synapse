@@ -1,0 +1,135 @@
+{
+	"name": "read_search_by_name",
+	"properties": {
+		"folder": {
+			"name": "purview-api-test"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SampleSpark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "5398e396-6660-4b55-8a52-a1c8edd99d85"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+				"name": "SampleSpark",
+				"type": "Spark",
+				"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import json\r\n",
+					"import os\r\n",
+					"\r\n",
+					"# PyApacheAtlas packages\r\n",
+					"# Connect to Atlas via a Service Principal\r\n",
+					"from pyapacheatlas.auth import ServicePrincipalAuthentication\r\n",
+					"from pyapacheatlas.core import PurviewClient, AtlasEntity, AtlasProcess\r\n",
+					"\r\n",
+					"if __name__ == \"__main__\":\r\n",
+					"    \"\"\"\r\n",
+					"    This sample provides an example of searching for an existing entity\r\n",
+					"    through the rest api / pyapacheatlas classes.\r\n",
+					"    NOTE: This example is specific to Azure Purview's Advanced Search.\r\n",
+					"    The response is a Python generator that allows you to page through the\r\n",
+					"    search results. For each page in the search results, you have a list\r\n",
+					"    of search entities that can be iterated over.\r\n",
+					"    \"\"\"\r\n",
+					"\r\n",
+					"    # Authenticate against your Atlas server\r\n",
+					"    oauth = ServicePrincipalAuthentication(\r\n",
+					"        tenant_id=os.environ.get(\"TENANT_ID\", \"16b3c013-d300-468d-ac64-7eda0820b6d3\"),\r\n",
+					"        client_id=os.environ.get(\"CLIENT_ID\", \"0cd3895f-c253-40fb-bc87-a3f36abf8196\"),\r\n",
+					"        client_secret=os.environ.get(\"CLIENT_SECRET\", \"a-18Q~s7MNvZQ2Bzl0OQeZif7ai8wWmQ59VAUbgU\")\r\n",
+					"    )\r\n",
+					"    client = PurviewClient(\r\n",
+					"        account_name = os.environ.get(\"PURVIEW_NAME\", \"testpurview-01\"),\r\n",
+					"        authentication=oauth\r\n",
+					"    )\r\n",
+					"\r\n",
+					"    # Assuming you have an entity with the word demo in the name or description\r\n",
+					"    search = client.discovery.search_entities(\"demo\")\r\n",
+					"\r\n",
+					"    # Alternative search methods include...\r\n",
+					"    # Searching across a given attribute:\r\n",
+					"    # Search only the name (or qualifiedName) field and it begins with demo\r\n",
+					"    # Must include a wildcard character (*) at the end, does not support\r\n",
+					"    # wildcard at the beginning or middle.\r\n",
+					"\r\n",
+					"    # search = client.discovery.search_entities(\"name:demo*\")\r\n",
+					"    # search = client.discovery.search_entities(\"qualifiedName:demo*\")\r\n",
+					"\r\n",
+					"    # Searching within a given type and include subtypes...\r\n",
+					"    # Provide a search filter that specifies the typeName and whether\r\n",
+					"    # you want to include sub types of that type or not.\r\n",
+					"\r\n",
+					"    # filter_setup = {\"typeName\": \"DataSet\", \"includeSubTypes\": True}\r\n",
+					"    # search = client.discovery.search_entities(\"*\", search_filter=filter_setup)\r\n",
+					"\r\n",
+					"    # The response is a Python generator that allows you to page through the\r\n",
+					"    # search results without having to worry about paging or offsets.\r\n",
+					"    for entity in search:\r\n",
+					"        # Important properties returned include...\r\n",
+					"        # id (the guid of the entity), name, qualifedName, @search.score,\r\n",
+					"        # and @search.highlights\r\n",
+					"        print(json.dumps(entity, indent=2))"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install pyapacheatlas"
+				],
+				"execution_count": 4
+			}
+		]
+	}
+}

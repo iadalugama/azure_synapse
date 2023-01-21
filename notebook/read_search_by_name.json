@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5398e396-6660-4b55-8a52-a1c8edd99d85"
+				"spark.autotune.trackingId": "be48f006-ee2d-4dac-aebc-7774508605f9"
 			}
 		},
 		"metadata": {
@@ -84,16 +84,16 @@
 					"    )\r\n",
 					"\r\n",
 					"    # Assuming you have an entity with the word demo in the name or description\r\n",
-					"    search = client.discovery.search_entities(\"demo\")\r\n",
-					"\r\n",
+					"    search = client.discovery.search_entities(\"Customers_Shaw\")\r\n",
+					"    \r\n",
 					"    # Alternative search methods include...\r\n",
 					"    # Searching across a given attribute:\r\n",
 					"    # Search only the name (or qualifiedName) field and it begins with demo\r\n",
 					"    # Must include a wildcard character (*) at the end, does not support\r\n",
 					"    # wildcard at the beginning or middle.\r\n",
 					"\r\n",
-					"    # search = client.discovery.search_entities(\"name:demo*\")\r\n",
-					"    # search = client.discovery.search_entities(\"qualifiedName:demo*\")\r\n",
+					"    #search = client.discovery.search_entities(\"name:Customer*\")\r\n",
+					"    #search = client.discovery.search_entities(\"qualifiedName:Phone*\")\r\n",
 					"\r\n",
 					"    # Searching within a given type and include subtypes...\r\n",
 					"    # Provide a search filter that specifies the typeName and whether\r\n",
@@ -108,9 +108,25 @@
 					"        # Important properties returned include...\r\n",
 					"        # id (the guid of the entity), name, qualifedName, @search.score,\r\n",
 					"        # and @search.highlights\r\n",
+					"        print(json.dumps(entity, indent=2))\r\n",
+					"\r\n",
+					"\r\n",
+					" # ---------------------------------------------------------------\r\n",
+					"    print(\"When you know the GUID that you want to get--------------------------------\")\r\n",
+					"    # When you know the GUID that you want to get\r\n",
+					"    response = client.get_entity(guid=\"df66fec7-c93e-46dd-bd33-5393cb2dc966\")\r\n",
+					"    print(json.dumps(response, indent=2))\r\n",
+					"\r\n",
+					"    # When you need to find multiple Guids and they all are the same type\r\n",
+					"    entities = client.get_entity(qualifiedName=[\"https://generaladls2.dfs.core.windows.net/row-data/sample_csv_data/Customers_Shaw.csv\"],\r\n",
+					"        typeName=\"azure_datalake_gen2_path\"    )\r\n",
+					"    \r\n",
+					"    print(\"entities--------------------------------\")\r\n",
+					"\r\n",
+					"    for entity in entities.get(\"entities\"):\r\n",
 					"        print(json.dumps(entity, indent=2))"
 				],
-				"execution_count": 5
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -128,7 +144,7 @@
 				"source": [
 					"pip install pyapacheatlas"
 				],
-				"execution_count": 4
+				"execution_count": null
 			}
 		]
 	}

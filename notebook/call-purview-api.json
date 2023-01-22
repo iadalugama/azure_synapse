@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1895a830-456c-431e-8e29-bfbe3fa9e92c"
+				"spark.autotune.trackingId": "28f4678d-ffe7-4d70-a574-77c2741c641e"
 			}
 		},
 		"metadata": {
@@ -91,7 +91,7 @@
 					"    \"\"\"\r\n",
 					"\r\n",
 					"    # List all files in path\r\n",
-					"    url = f\"https://{data_catalog_name}.catalog.purview.azure.com/api/browse\"\r\n",
+					"    url = f\"https://{data_catalog_name}.catalog.purview.azure.com/api/browse?api-version=2022-11-01-preview\"\r\n",
 					"\r\n",
 					"    headers = {\r\n",
 					"            'Authorization': f'Bearer {azuread_access_token}',\r\n",
@@ -107,6 +107,7 @@
 					"\r\n",
 					"    li = json.loads(response.text)\r\n",
 					"\r\n",
+					"    # print (li)\r\n",
 					"    # Return all files\r\n",
 					"    for x in jmespath.search(\"value\", li):\r\n",
 					"        if jmespath.search(\"isLeaf\", x):\r\n",
@@ -268,7 +269,7 @@
 					"# Display Asset DataFrame\r\n",
 					"display(files_df)"
 				],
-				"execution_count": 4
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -304,7 +305,7 @@
 				"source": [
 					"pip install pyapacheatlas"
 				],
-				"execution_count": 2
+				"execution_count": null
 			}
 		]
 	}

@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cb631ee2-a4f2-401b-96e7-496c852b52bc"
+				"spark.autotune.trackingId": "1895a830-456c-431e-8e29-bfbe3fa9e92c"
 			}
 		},
 		"metadata": {
@@ -234,7 +234,7 @@
 					"# Asset details\r\n",
 					"\r\n",
 					"# Asset parameters\r\n",
-					"storage_account = \"generaladls2 \"\r\n",
+					"storage_account = \"generaladls2\"\r\n",
 					"container = \"row-data\"\r\n",
 					"\r\n",
 					"# The root level path we want to begin populating assets from\r\n",
@@ -268,7 +268,7 @@
 					"# Display Asset DataFrame\r\n",
 					"display(files_df)"
 				],
-				"execution_count": 9
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -286,7 +286,7 @@
 				"source": [
 					"pip install jmespath"
 				],
-				"execution_count": null
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -304,7 +304,7 @@
 				"source": [
 					"pip install pyapacheatlas"
 				],
-				"execution_count": null
+				"execution_count": 2
 			}
 		]
 	}

@@ -1,0 +1,28 @@
+{
+	"name": "PauseResumeDedicatedPools",
+	"properties": {
+		"parameters": {
+			"ResourceGroup": {
+				"type": "string",
+				"defaultValue": "test-synapse-analytics"
+			},
+			"SubscriptionID": {
+				"type": "string",
+				"defaultValue": "3c321efc-9b78-45cd-ab39-1378151cbd42"
+			},
+			"WorkspaceName": {
+				"type": "string",
+				"defaultValue": "synapsewsp01"
+			},
+			"SQLPoolName": {
+				"type": "string",
+				"defaultValue": "sample__sales_dw"
+			},
+			"PauseorResume": {
+				"type": "string",
+				"defaultValue": "Pause"
+			}
+		},
+		"annotations": []
+	}
+}

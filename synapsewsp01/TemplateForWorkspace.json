@@ -7,6 +7,10 @@
 			"metadata": "Workspace name",
 			"defaultValue": "synapsewsp01"
 		},
+		"AzureDataLakeStorage_generaladls2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage_generaladls2'"
+		},
 		"AzureSql_sample_sql_instance_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSql_sample_sql_instance'"
@@ -19,6 +23,14 @@
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"type": "secureString",
 			"metadata": "Secure string for 'sasUri' of 'AzureBlobStorage_TaxiSample'"
+		},
+		"AzureDataLakeStorage_generaladls2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://generaladls2.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_kv_t01_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://kv-t01.vault.azure.net/"
 		},
 		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
@@ -124,6 +136,145 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/PauseResumeDedicatedPools')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "GET List",
+						"type": "WebActivity",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools?api-version=2019-06-01-preview')",
+								"type": "Expression"
+							},
+							"connectVia": {
+								"referenceName": "AutoResolveIntegrationRuntime",
+								"type": "IntegrationRuntimeReference"
+							},
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "ServicePrincipal",
+								"userTenant": "16b3c013-d300-468d-ac64-7eda0820b6d3",
+								"username": "9ee66bb1-b7f6-4221-bb93-89cd6903fcef",
+								"resource": "https://management.azure.com/",
+								"password": {
+									"type": "SecureString",
+									"value": "**********"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"ResourceGroup": {
+						"type": "string",
+						"defaultValue": "test-synapse-analytics"
+					},
+					"SubscriptionID": {
+						"type": "string",
+						"defaultValue": "3c321efc-9b78-45cd-ab39-1378151cbd42"
+					},
+					"WorkspaceName": {
+						"type": "string",
+						"defaultValue": "synapsewsp01"
+					},
+					"SQLPoolName": {
+						"type": "string",
+						"defaultValue": "sample__sales_dw"
+					},
+					"PauseorResume": {
+						"type": "string",
+						"defaultValue": "Pause"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DelimitedText1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage_generaladls2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Customers_Rogers.csv",
+						"folderPath": "sample_csv_data",
+						"fileSystem": "row-data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/DestinationDataset__nyctaxidata')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -187,6 +338,42 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage_generaladls2')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage_generaladls2_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage_generaladls2_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureKeyVault_kv_t01')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('AzureKeyVault_kv_t01_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/AzureSql_sample_sql_instance')]",
@@ -296,6 +483,478 @@
 					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/call-purview-api')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "purview-api-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SampleSpark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "28f4678d-ffe7-4d70-a574-77c2741c641e"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+						"name": "SampleSpark",
+						"type": "Spark",
+						"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"# Reusable Functions\r\n",
+							"def azuread_auth(tenant_id: str, client_id: str, client_secret: str, resource_url: str):\r\n",
+							"    \"\"\"\r\n",
+							"    Authenticates Service Principal to the provided Resource URL, and returns the OAuth Access Token\r\n",
+							"    \"\"\"\r\n",
+							"    url = f\"https://login.microsoftonline.com/{tenant_id}/oauth2/token\"\r\n",
+							"    payload= f'grant_type=client_credentials&client_id={client_id}&client_secret={client_secret}&resource={resource_url}'\r\n",
+							"    headers = {\r\n",
+							"    'Content-Type': 'application/x-www-form-urlencoded'\r\n",
+							"    }\r\n",
+							"    response = requests.request(\"POST\", url, headers=headers, data=payload)\r\n",
+							"    access_token = json.loads(response.text)['access_token']\r\n",
+							"    return access_token\r\n",
+							"\r\n",
+							"def purview_auth(tenant_id: str, client_id: str, client_secret: str, data_catalog_name: str):\r\n",
+							"    \"\"\"\r\n",
+							"    Authenticates to Atlas Endpoint and returns a client object\r\n",
+							"    \"\"\"\r\n",
+							"    oauth = ServicePrincipalAuthentication(\r\n",
+							"        tenant_id = tenant_id,\r\n",
+							"        client_id = client_id,\r\n",
+							"        client_secret = client_secret\r\n",
+							"    )\r\n",
+							"    client = PurviewClient(\r\n",
+							"        account_name = data_catalog_name,\r\n",
+							"        authentication = oauth\r\n",
+							"    )\r\n",
+							"    return client\r\n",
+							"\r\n",
+							"def get_all_adls_assets(path: str, data_catalog_name: str, azuread_access_token: str, max_depth=1):\r\n",
+							"    \"\"\"\r\n",
+							"    Retrieves all scanned assets for the specified ADLS Storage Account Container.\r\n",
+							"    \r\n",
+							"    Note: this function intentionally recursively traverses until only assets remain (i.e. no folders are returned, only files).\r\n",
+							"    \"\"\"\r\n",
+							"\r\n",
+							"    # List all files in path\r\n",
+							"    url = f\"https://{data_catalog_name}.catalog.purview.azure.com/api/browse?api-version=2022-11-01-preview\"\r\n",
+							"\r\n",
+							"    headers = {\r\n",
+							"            'Authorization': f'Bearer {azuread_access_token}',\r\n",
+							"            'Content-Type': 'application/json'\r\n",
+							"            }\r\n",
+							"\r\n",
+							"    payload=\"\"\"{\"limit\": 100,\r\n",
+							"                \"offset\": null,\r\n",
+							"                \"path\": \"%s\"\r\n",
+							"                }\"\"\" % (path)\r\n",
+							"                \r\n",
+							"    response = requests.request(\"POST\", url, headers=headers, data=payload)\r\n",
+							"\r\n",
+							"    li = json.loads(response.text)\r\n",
+							"\r\n",
+							"    # print (li)\r\n",
+							"    # Return all files\r\n",
+							"    for x in jmespath.search(\"value\", li):\r\n",
+							"        if jmespath.search(\"isLeaf\", x):\r\n",
+							"            yield x\r\n",
+							"\r\n",
+							"    # If the max_depth has not been reached, start\r\n",
+							"    # listing files and folders in subdirectories\r\n",
+							"    if max_depth > 1:\r\n",
+							"        for x in jmespath.search(\"value\", li):\r\n",
+							"            if jmespath.search(\"isLeaf\", x):\r\n",
+							"                continue\r\n",
+							"            for y in get_all_adls_assets(jmespath.search(\"path\", x), data_catalog_name, azuread_access_token, max_depth - 1):\r\n",
+							"                yield y\r\n",
+							"\r\n",
+							"    # If max_depth has been reached,\r\n",
+							"    # return the folders\r\n",
+							"    else:\r\n",
+							"        for x in jmespath.search(\"value\", li):\r\n",
+							"            if jmespath.search(\"!isLeaf\", x):\r\n",
+							"                yield x\r\n",
+							"\r\n",
+							"def get_adls_asset_schema(assets_all: list, asset: str, purview_client: str):\r\n",
+							"    \"\"\"\r\n",
+							"    Returns the asset schema and classifications from Purview\r\n",
+							"    \"\"\"    \r\n",
+							"    # Filter response for our asset of interest\r\n",
+							"    assets_list = list(filter(lambda i: i['name'] == asset, assets_all))\r\n",
+							"    \r\n",
+							"    # Find the guid for the asset to retrieve the tabular_schema or attachedSchema (based on the asset type)\r\n",
+							"    match_id = \"\"\r\n",
+							"    for entry in assets_list:\r\n",
+							"        # Retrieve the asset definition from the Atlas Client\r\n",
+							"        response = purview_client.get_entity(entry['id'])\r\n",
+							"\r\n",
+							"        # API response is different based on the asset\r\n",
+							"        if asset.split('.', 1)[-1] == \"json\":\r\n",
+							"            filtered_response = jmespath.search(\"entities[?source=='DataScan'].[relationshipAttributes.attachedSchema[0].guid]\", response)\r\n",
+							"        else:\r\n",
+							"            filtered_response = jmespath.search(\"entities[?source=='DataScan'].[relationshipAttributes.tabular_schema.guid]\", response)\r\n",
+							"        \r\n",
+							"        # Update match_id if source is DataScan\r\n",
+							"        if filtered_response:\r\n",
+							"            match_id = filtered_response[0][0]\r\n",
+							"    \r\n",
+							"    # Retrieve the schema based on the guid match\r\n",
+							"    response = purview_client.get_entity(match_id)\r\n",
+							"    asset_schema = jmespath.search(\"[referredEntities.*.[attributes.name, classifications[0].[typeName][0]]]\", response)[0]\r\n",
+							"\r\n",
+							"    return asset_schema\r\n",
+							"\r\n",
+							"def deep_ls(path: str, max_depth=1):\r\n",
+							"    \"\"\"\r\n",
+							"    List all files and folders in specified path and\r\n",
+							"    subfolders within maximum recursion depth.\r\n",
+							"    \"\"\"\r\n",
+							"    # List all files in path and apply sorting rules\r\n",
+							"    li = mssparkutils.fs.ls(path)\r\n",
+							"\r\n",
+							"    # Return all files\r\n",
+							"    for x in li:\r\n",
+							"        if x.size != 0:\r\n",
+							"            yield x\r\n",
+							"\r\n",
+							"    # If the max_depth has not been reached, start\r\n",
+							"    # listing files and folders in subdirectories\r\n",
+							"    if max_depth > 1:\r\n",
+							"        for x in li:\r\n",
+							"            if x.size != 0:\r\n",
+							"                continue\r\n",
+							"            for y in deep_ls(x.path, max_depth - 1):\r\n",
+							"                yield y\r\n",
+							"\r\n",
+							"    # If max_depth has been reached,\r\n",
+							"    # return the folders\r\n",
+							"    else:\r\n",
+							"        for x in li:\r\n",
+							"            if x.size == 0:\r\n",
+							"                yield x\r\n",
+							"\r\n",
+							"def convertfiles2df(files):\r\n",
+							"    \"\"\"\r\n",
+							"    Converts FileInfo object into Pandas DataFrame to enable display\r\n",
+							"    \"\"\"\r\n",
+							"    # Disable Arrow-based transfers since the Pandas DataFrame is tiny\r\n",
+							"    spark.conf.set(\"spark.sql.execution.arrow.enabled\", \"false\")\r\n",
+							"\r\n",
+							"    schema = ['path','name','size']\r\n",
+							"    df = pd.DataFrame([[getattr(i,j) for j in schema] for i in files], columns = schema).sort_values('path')\r\n",
+							"    return(df)\r\n",
+							"  \r\n",
+							"# Example Implementation\r\n",
+							"# ----------------------\r\n",
+							"\r\n",
+							"# Library Imports\r\n",
+							"\r\n",
+							"import os\r\n",
+							"import requests\r\n",
+							"import json\r\n",
+							"import jmespath\r\n",
+							"import pandas as pd\r\n",
+							"\r\n",
+							"from notebookutils import mssparkutils\r\n",
+							"from pprint import pprint\r\n",
+							"from pyapacheatlas.auth import ServicePrincipalAuthentication\r\n",
+							"from pyapacheatlas.core import PurviewClient, AtlasEntity, AtlasProcess, TypeCategory\r\n",
+							"from pyapacheatlas.core.typedef import *\r\n",
+							"\r\n",
+							"from pyspark.sql import *\r\n",
+							"from pyspark.sql.functions import *\r\n",
+							"from pyspark.sql.types import *\r\n",
+							"\r\n",
+							"# Authentication\r\n",
+							"\r\n",
+							"# Service Principal with \"Purview Data Source Administrator\" permissions on Purview\r\n",
+							"tenant_id = \"16b3c013-d300-468d-ac64-7eda0820b6d3\"\r\n",
+							"client_id = \"0cd3895f-c253-40fb-bc87-a3f36abf8196\"\r\n",
+							"client_secret = \"a-18Q~s7MNvZQ2Bzl0OQeZif7ai8wWmQ59VAUbgU\"\r\n",
+							"resource_url = \"https://purview.azure.net\"\r\n",
+							"data_catalog_name = \"testpurview-01\"\r\n",
+							"\r\n",
+							"# Retrieve authentication objects\r\n",
+							"azuread_access_token = azuread_auth(tenant_id, client_id, client_secret, resource_url)\r\n",
+							"purview_client = purview_auth(tenant_id, client_id, client_secret, data_catalog_name)\r\n",
+							"\r\n",
+							"# Asset details\r\n",
+							"\r\n",
+							"# Asset parameters\r\n",
+							"storage_account = \"generaladls2\"\r\n",
+							"container = \"row-data\"\r\n",
+							"\r\n",
+							"# The root level path we want to begin populating assets from\r\n",
+							"top_path = f\"/azure_storage_account#{storage_account}.core.windows.net/azure_datalake_gen2_service#{storage_account}.dfs.core.windows.net/azure_datalake_gen2_filesystem#{container}\"\r\n",
+							"\r\n",
+							"# Retrieve full list of assets\r\n",
+							"assets_all = list(get_all_adls_assets(top_path, data_catalog_name, azuread_access_token, max_depth=20))\r\n",
+							"\r\n",
+							"# Azure storage access info\r\n",
+							"linked_service_name = 'AzureDataLakeStorage_generaladls2'\r\n",
+							"\r\n",
+							"# Grab SAS token\r\n",
+							"adls_sas_token = mssparkutils.credentials.getConnectionStringOrCreds(linked_service_name)\r\n",
+							"\r\n",
+							"# Configure Spark to access from DFS endpoint\r\n",
+							"root = 'abfss://%s@%s.dfs.core.windows.net/' % (container, storage_account)\r\n",
+							"\r\n",
+							"spark.conf.set('fs.azure.sas.%s.%s.dfs.core.windows.net' % (container, storage_account), adls_sas_token)\r\n",
+							"print('Remote adls root path: ' + root)\r\n",
+							"\r\n",
+							"# Get ADLS files recursively\r\n",
+							"files = list(deep_ls(root, max_depth=20))\r\n",
+							"files_df = convertfiles2df(files) # Note this is a Pandas DataFrame\r\n",
+							"\r\n",
+							"# Generate asset-aligned names\r\n",
+							"files_df['asset'] = files_df['name'].str.replace(r'\\d+', '{N}')\r\n",
+							"\r\n",
+							"# Append schema row-wise from Purview\r\n",
+							"files_df['schema'] = files_df.apply(lambda row: get_adls_asset_schema(assets_all, row['asset'], purview_client), axis=1)\r\n",
+							"\r\n",
+							"# Display Asset DataFrame\r\n",
+							"display(files_df)"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pip install jmespath"
+						],
+						"outputs": [],
+						"execution_count": 3
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pip install pyapacheatlas"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/read_search_by_name')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "purview-api-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SampleSpark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "be48f006-ee2d-4dac-aebc-7774508605f9"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+						"name": "SampleSpark",
+						"type": "Spark",
+						"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"import json\r\n",
+							"import os\r\n",
+							"\r\n",
+							"# PyApacheAtlas packages\r\n",
+							"# Connect to Atlas via a Service Principal\r\n",
+							"from pyapacheatlas.auth import ServicePrincipalAuthentication\r\n",
+							"from pyapacheatlas.core import PurviewClient, AtlasEntity, AtlasProcess\r\n",
+							"\r\n",
+							"if __name__ == \"__main__\":\r\n",
+							"    \"\"\"\r\n",
+							"    This sample provides an example of searching for an existing entity\r\n",
+							"    through the rest api / pyapacheatlas classes.\r\n",
+							"    NOTE: This example is specific to Azure Purview's Advanced Search.\r\n",
+							"    The response is a Python generator that allows you to page through the\r\n",
+							"    search results. For each page in the search results, you have a list\r\n",
+							"    of search entities that can be iterated over.\r\n",
+							"    \"\"\"\r\n",
+							"\r\n",
+							"    # Authenticate against your Atlas server\r\n",
+							"    oauth = ServicePrincipalAuthentication(\r\n",
+							"        tenant_id=os.environ.get(\"TENANT_ID\", \"16b3c013-d300-468d-ac64-7eda0820b6d3\"),\r\n",
+							"        client_id=os.environ.get(\"CLIENT_ID\", \"0cd3895f-c253-40fb-bc87-a3f36abf8196\"),\r\n",
+							"        client_secret=os.environ.get(\"CLIENT_SECRET\", \"a-18Q~s7MNvZQ2Bzl0OQeZif7ai8wWmQ59VAUbgU\")\r\n",
+							"    )\r\n",
+							"    client = PurviewClient(\r\n",
+							"        account_name = os.environ.get(\"PURVIEW_NAME\", \"testpurview-01\"),\r\n",
+							"        authentication=oauth\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    # Assuming you have an entity with the word demo in the name or description\r\n",
+							"    search = client.discovery.search_entities(\"Customers_Shaw\")\r\n",
+							"    \r\n",
+							"    # Alternative search methods include...\r\n",
+							"    # Searching across a given attribute:\r\n",
+							"    # Search only the name (or qualifiedName) field and it begins with demo\r\n",
+							"    # Must include a wildcard character (*) at the end, does not support\r\n",
+							"    # wildcard at the beginning or middle.\r\n",
+							"\r\n",
+							"    #search = client.discovery.search_entities(\"name:Customer*\")\r\n",
+							"    #search = client.discovery.search_entities(\"qualifiedName:Phone*\")\r\n",
+							"\r\n",
+							"    # Searching within a given type and include subtypes...\r\n",
+							"    # Provide a search filter that specifies the typeName and whether\r\n",
+							"    # you want to include sub types of that type or not.\r\n",
+							"\r\n",
+							"    # filter_setup = {\"typeName\": \"DataSet\", \"includeSubTypes\": True}\r\n",
+							"    # search = client.discovery.search_entities(\"*\", search_filter=filter_setup)\r\n",
+							"\r\n",
+							"    # The response is a Python generator that allows you to page through the\r\n",
+							"    # search results without having to worry about paging or offsets.\r\n",
+							"    for entity in search:\r\n",
+							"        # Important properties returned include...\r\n",
+							"        # id (the guid of the entity), name, qualifedName, @search.score,\r\n",
+							"        # and @search.highlights\r\n",
+							"        print(json.dumps(entity, indent=2))\r\n",
+							"\r\n",
+							"\r\n",
+							" # ---------------------------------------------------------------\r\n",
+							"    print(\"When you know the GUID that you want to get--------------------------------\")\r\n",
+							"    # When you know the GUID that you want to get\r\n",
+							"    response = client.get_entity(guid=\"df66fec7-c93e-46dd-bd33-5393cb2dc966\")\r\n",
+							"    print(json.dumps(response, indent=2))\r\n",
+							"\r\n",
+							"    # When you need to find multiple Guids and they all are the same type\r\n",
+							"    entities = client.get_entity(qualifiedName=[\"https://generaladls2.dfs.core.windows.net/row-data/sample_csv_data/Customers_Shaw.csv\"],\r\n",
+							"        typeName=\"azure_datalake_gen2_path\"    )\r\n",
+							"    \r\n",
+							"    print(\"entities--------------------------------\")\r\n",
+							"\r\n",
+							"    for entity in entities.get(\"entities\"):\r\n",
+							"        print(json.dumps(entity, indent=2))"
+						],
+						"outputs": [],
+						"execution_count": 38
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pip install pyapacheatlas"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
 			},
 			"dependsOn": []
 		},
@@ -9762,6 +10421,31 @@
 				]
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/SampleSpark')]",
+			"type": "Microsoft.Synapse/workspaces/bigDataPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"autoPause": {
+					"enabled": true,
+					"delayInMinutes": 15
+				},
+				"autoScale": {
+					"enabled": false,
+					"maxNodeCount": 10,
+					"minNodeCount": 3
+				},
+				"nodeCount": 3,
+				"nodeSize": "Medium",
+				"nodeSizeFamily": "MemoryOptimized",
+				"sparkVersion": "3.2",
+				"isComputeIsolationEnabled": false,
+				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "canadacentral"
 		},
 		{
 			"name": "[concat(parameters('workspaceName'), '/sample__sales_dw')]",

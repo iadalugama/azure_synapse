@@ -5,6 +5,9 @@
 		"workspaceName": {
 			"value": "synapsewsp01"
 		},
+		"AzureDataLakeStorage_generaladls2_accountKey": {
+			"value": ""
+		},
 		"AzureSql_sample_sql_instance_connectionString": {
 			"value": ""
 		},
@@ -13,6 +16,12 @@
 		},
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"value": ""
+		},
+		"AzureDataLakeStorage_generaladls2_properties_typeProperties_url": {
+			"value": "https://generaladls2.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_kv_t01_properties_typeProperties_baseUrl": {
+			"value": "https://kv-t01.vault.azure.net/"
 		},
 		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://synapsews01adls2.dfs.core.windows.net"

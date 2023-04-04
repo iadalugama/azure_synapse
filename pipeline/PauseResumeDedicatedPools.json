@@ -25,9 +25,7 @@
 					},
 					"method": "GET",
 					"authentication": {
-						"type": "ServicePrincipal",
-						"userTenant": "16b3c013-d300-468d-ac64-7eda0820b6d3",
-						"username": "9ee66bb1-b7f6-4221-bb93-89cd6903fcef",
+						"type": "MSI",
 						"resource": "https://management.azure.com/"
 					}
 				}

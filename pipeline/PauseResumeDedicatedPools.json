@@ -1,6 +1,38 @@
 {
 	"name": "PauseResumeDedicatedPools",
 	"properties": {
+		"activities": [
+			{
+				"name": "GET List",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"url": {
+						"value": "@concat('https://management.azure.com/subscriptions/',pipeline().parameters.SubscriptionID,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Synapse/workspaces/',pipeline().parameters.WorkspaceName,'/sqlPools?api-version=2019-06-01-preview')",
+						"type": "Expression"
+					},
+					"connectVia": {
+						"referenceName": "AutoResolveIntegrationRuntime",
+						"type": "IntegrationRuntimeReference"
+					},
+					"method": "GET",
+					"authentication": {
+						"type": "ServicePrincipal",
+						"userTenant": "16b3c013-d300-468d-ac64-7eda0820b6d3",
+						"username": "9ee66bb1-b7f6-4221-bb93-89cd6903fcef",
+						"resource": "https://management.azure.com/"
+					}
+				}
+			}
+		],
 		"parameters": {
 			"ResourceGroup": {
 				"type": "string",

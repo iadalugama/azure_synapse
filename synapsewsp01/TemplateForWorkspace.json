@@ -262,7 +262,7 @@
 												"value": "Paused-Resume",
 												"activities": [
 													{
-														"name": "Web1",
+														"name": "WebPostResumeCommand",
 														"type": "WebActivity",
 														"dependsOn": [],
 														"policy": {
@@ -297,7 +297,7 @@
 												"value": "Online-Pause",
 												"activities": [
 													{
-														"name": "Web2",
+														"name": "WebPostPauseCommand",
 														"type": "WebActivity",
 														"dependsOn": [],
 														"policy": {

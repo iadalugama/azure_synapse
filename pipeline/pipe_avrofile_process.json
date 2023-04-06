@@ -4,7 +4,7 @@
 		"description": "https://github.com/balakreshnan/Samples2021/blob/main/ADF/avroprocessdf.md",
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "df-process-avro-files",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {

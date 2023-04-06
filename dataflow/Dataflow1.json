@@ -44,7 +44,7 @@
 				"     fileSystem: 'row-data',",
 				"     folderPath: 'sample_avro_data',",
 				"     fileName: '22.avro') ~> source1",
-				"source1 parse(BodyStructure = Body,",
+				"source1 parse(Body = Body,",
 				"     format: 'json',",
 				"     documentForm: 'documentPerLine') ~> parse1",
 				"parse1 foldDown(unroll(BodyStructure),",

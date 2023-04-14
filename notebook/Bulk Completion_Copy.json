@@ -1,0 +1,313 @@
+{
+	"name": "Bulk Completion_Copy",
+	"properties": {
+		"folder": {
+			"name": "OpenAI-test"
+		},
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "d47f5881-92ba-4297-b979-28754cbd55a0"
+			}
+		},
+		"metadata": {
+			"saveOutput": false,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Azure Open AI Summarization Use case\r\n",
+					"\r\n",
+					"This notebook provides an example code showing how to use the Open AI packages for the bulk chat completion for summarization use case. The verbatim dataset is loaded from Azure datalake which contains the verbaige for the specific plant operation defect condition. We are going to summarize that through Open AI GPT3.5 LLM and store the result in the enriched dataset back to datalake."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Required imports\r\n",
+					"import openai\r\n",
+					"import re\r\n",
+					"import pandas as pd\r\n",
+					"import numpy as np\r\n",
+					"import json\r\n",
+					"import requests"
+				],
+				"execution_count": 53
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Setup Azure OpenAI environment\r\n",
+					"openai.api_type = \"azure\"\r\n",
+					"openai.api_key = \"<API_KEY>\"\r\n",
+					"openai.api_base = \"https://<RESOURCE_NAME>.openai.azure.com/\"\r\n",
+					"openai.api_version = \"2023-03-15-preview\"\r\n",
+					""
+				],
+				"execution_count": 54
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Mount Datalake path for accessing datasets"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Update parameters for your environment\r\n",
+					"storage_account = 'datapoclake'\r\n",
+					"container_name = 'datasets'\r\n",
+					"subfolder = 'cognitive/datasets/OpenAI'\r\n",
+					"linkedServiceName = \"synapse-edge-WorkspaceDefaultStorage\"\r\n",
+					"\r\n",
+					"mssparkutils.fs.unmount(\"/openai\")\r\n",
+					"mssparkutils.fs.mount( \r\n",
+					"    f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/\", \r\n",
+					"    \"/openai\", \r\n",
+					"    {\"linkedService\":linkedServiceName} \r\n",
+					") \r\n",
+					"\r\n",
+					"jobId = mssparkutils.env.getJobId() \r\n",
+					"print(f\"Job Id: {jobId}\")"
+				],
+				"execution_count": 62
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.ls(f\"synfs:/{jobId}/openai/data/\")"
+				],
+				"execution_count": 56
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df = pd.read_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/data/PaintDefectVerbatim.csv\") \r\n",
+					"df"
+				],
+				"execution_count": 63
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# s is input text\r\n",
+					"def normalize_text(s, sep_token = \" \\n \"):\r\n",
+					"    s = re.sub(r'\\s+',  ' ', s).strip()\r\n",
+					"    s = re.sub(r\". ,\",\"\",s)\r\n",
+					"    # remove all instances of multiple spaces\r\n",
+					"    s = s.replace(\"..\",\".\")\r\n",
+					"    s = s.replace(\". .\",\".\")\r\n",
+					"    s = s.replace(\"\\n\", \"\")\r\n",
+					"    s = s.strip()\r\n",
+					"    \r\n",
+					"    return s\r\n",
+					"\r\n",
+					"df['verbatim_normalized'] = df[\"verbatim\"].apply(lambda x : normalize_text(x))\r\n",
+					"df\r\n",
+					""
+				],
+				"execution_count": 58
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"class Prompt:\r\n",
+					"    def __init__(self, role, content):\r\n",
+					"        self.role = role\r\n",
+					"        self.content = content\r\n",
+					"\r\n",
+					"\r\n",
+					"sys_prompt = Prompt(\r\n",
+					"    role=\"system\",\r\n",
+					"    content = \"You are an AI assistant that will help me succinctly summarize the failure in 2 words based on the verbatim I provide. I am looking for failure context which best describes the situation.\"\r\n",
+					")\r\n",
+					"prompts = list()\r\n",
+					"prompts.append(sys_prompt)\r\n",
+					"\r\n",
+					"def initiate_chat():\r\n",
+					"    global prompts, openai\r\n",
+					"    response = openai.ChatCompletion.create(\r\n",
+					"        engine=\"ChatGPT\", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.\r\n",
+					"        messages = [sys_prompt.__dict__]\r\n",
+					"    )\r\n",
+					"    result = response['choices'][0]['message']['content']\r\n",
+					"    print(f\"Result: {result}\")\r\n",
+					"    prompts.append(Prompt(role=\"system\", content=result))\r\n",
+					"\r\n",
+					"# Initiate the OpenAI engine\r\n",
+					"initiate_chat()\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 59
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def summarize_verbetim(v):\r\n",
+					"    global prompts, openai, sys_prompt\r\n",
+					"    message = f\"Verbatim: {v} \\n Code: ?\"\r\n",
+					"    prompt = Prompt(role=\"user\", content=message)\r\n",
+					"    prompts.append(prompt)\r\n",
+					"    response = openai.ChatCompletion.create(\r\n",
+					"        engine=\"ChatGPT\", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.\r\n",
+					"        messages = [sys_prompt.__dict__, prompt.__dict__]\r\n",
+					"    )\r\n",
+					"\r\n",
+					"    result = response['choices'][0]['message']['content']\r\n",
+					"    print(result)\r\n",
+					"    prompts.append(Prompt(role=\"system\", content=result))\r\n",
+					"\r\n",
+					"    return result\r\n",
+					"\r\n",
+					"\r\n",
+					"df['summarization'] = df[\"verbatim_normalized\"].apply(lambda x : summarize_verbetim(x))\r\n",
+					"\r\n",
+					"df_enriched = df.drop(['verbatim'], axis=1, inplace=False)\r\n",
+					"df_enriched"
+				],
+				"execution_count": 61
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df_enriched.to_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/data/PaintDefectVerbatim_enriched.csv\", sep=',', encoding='utf-8')"
+				],
+				"execution_count": 64
+			}
+		]
+	}
+}

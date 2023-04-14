@@ -1,5 +1,5 @@
 {
-	"name": "Notebook 1",
+	"name": "OpenAI-Resturant-Classification",
 	"properties": {
 		"folder": {
 			"name": "OpenAI-test"
@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "7aff11b2-8f92-4777-92e9-24f1a9c5591b"
+				"spark.autotune.trackingId": "85a37c6c-adf4-4396-8074-59a2d609fe5e"
 			}
 		},
 		"metadata": {
@@ -54,9 +54,14 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"pip install langchain"
+					"from synapse.ml.core.platform import find_secret\r\n",
+					"\r\n",
+					"# Fill in the following lines with your service information\r\n",
+					"service_name = \"resturant-review-classification\" # Name of your OpenAI service\r\n",
+					"deployment_name = \"text-davinci-002\" # Name of your deployment in OpenAI\r\n",
+					"key = find_secret(\"<secretname>\", \"<keyvaultname>\")  # replace this with your secret and keyvault"
 				],
-				"execution_count": 1
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -72,7 +77,16 @@
 					}
 				},
 				"source": [
-					"pip install openai"
+					"from pyspark.sql.types import *\r\n",
+					"from pyspark.sql.functions import *\r\n",
+					"\r\n",
+					"df = spark.read.option('header', 'true') \\\r\n",
+					"                .option('delimiter', '|') \\\r\n",
+					"                .csv('abfss://row-data@generaladls2.dfs.core.windows.net/row-data/sample_csv_data/RestaurantReviews.csv')\r\n",
+					"\r\n",
+					"display(df)\r\n",
+					"\r\n",
+					"# https://generaladls2.blob.core.windows.net/row-data/sample_csv_data/RestaurantReviews.csv"
 				],
 				"execution_count": 3
 			}

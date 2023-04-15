@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "016171f8-86df-496f-aac9-0054e4129828"
+				"spark.autotune.trackingId": "882c73a0-c3d9-463a-b091-08a82e70ebd1"
 			}
 		},
 		"metadata": {
@@ -88,7 +88,7 @@
 					"import json\r\n",
 					"import requests"
 				],
-				"execution_count": 2
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -111,7 +111,7 @@
 					"openai.api_version = \"2023-03-15-preview\"\r\n",
 					""
 				],
-				"execution_count": 54
+				"execution_count": 6
 			},
 			{
 				"cell_type": "markdown",
@@ -159,7 +159,7 @@
 					"\r\n",
 					"# https://generaladls2.blob.core.windows.net/row-data/sample_csv_data/RestaurantReviews.csv"
 				],
-				"execution_count": 62
+				"execution_count": 9
 			},
 			{
 				"cell_type": "code",
@@ -175,9 +175,9 @@
 					}
 				},
 				"source": [
-					"mssparkutils.fs.ls(f\"synfs:/{jobId}/openai/data/\")"
+					"mssparkutils.fs.ls(f\"synfs:/{jobId}/openai/\")"
 				],
-				"execution_count": 56
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
@@ -193,10 +193,10 @@
 					}
 				},
 				"source": [
-					"df = pd.read_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/data/PaintDefectVerbatim.csv\") \r\n",
+					"df = pd.read_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/PaintDefectVerbatim.csv\") \r\n",
 					"df"
 				],
-				"execution_count": 63
+				"execution_count": 14
 			},
 			{
 				"cell_type": "code",
@@ -228,7 +228,7 @@
 					"df\r\n",
 					""
 				],
-				"execution_count": 58
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -272,7 +272,7 @@
 					"\r\n",
 					""
 				],
-				"execution_count": 59
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",

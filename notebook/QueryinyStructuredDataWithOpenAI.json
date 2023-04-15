@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "842ae8bb-0538-41a3-97d9-ea5862cf00fb"
+				"spark.autotune.trackingId": "09b1d941-4335-4060-9038-f9f14360783a"
 			}
 		},
 		"metadata": {
@@ -71,7 +71,7 @@
 					"# Preview the dataframe\r\n",
 					"df.head()"
 				],
-				"execution_count": 1
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -94,7 +94,7 @@
 					"openai.api_version = \"2022-12-01\"\r\n",
 					"openai.api_key = \"1369d83861a247fb9e2113c9f177dc21\""
 				],
-				"execution_count": 2
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -111,9 +111,9 @@
 				},
 				"source": [
 					"pre_text = df.head(10).to_json(orient=\"records\")\r\n",
-					"pre_text.head()"
+					"print(pre_text)"
 				],
-				"execution_count": null
+				"execution_count": 7
 			},
 			{
 				"cell_type": "code",
@@ -130,8 +130,6 @@
 				},
 				"source": [
 					"\r\n",
-					"\r\n",
-					"\r\n",
 					"query = input(\" list the columns' name: \")\r\n",
 					"response = openai.Completion.create(\r\n",
 					"  engine=\"test1\",\r\n",
@@ -147,7 +145,7 @@
 					"response = response.choices[0].text\r\n",
 					"print(\"OpenAI response: \", response)"
 				],
-				"execution_count": 3
+				"execution_count": 8
 			}
 		]
 	}

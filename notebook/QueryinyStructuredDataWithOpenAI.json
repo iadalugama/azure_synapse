@@ -6,17 +6,21 @@
 		},
 		"nbformat": 4,
 		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SampleSpark",
+			"type": "BigDataPoolReference"
+		},
 		"sessionProperties": {
-			"driverMemory": "28g",
-			"driverCores": 4,
-			"executorMemory": "28g",
-			"executorCores": 4,
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
 			"numExecutors": 2,
 			"conf": {
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "19a42813-2df8-4e74-8a4c-5e2bc5567a3a"
+				"spark.autotune.trackingId": "c638925e-c617-44f8-bf88-adeac770065c"
 			}
 		},
 		"metadata": {
@@ -24,10 +28,25 @@
 			"enableDebugMode": false,
 			"kernelspec": {
 				"name": "synapse_pyspark",
-				"display_name": "python"
+				"display_name": "Synapse PySpark"
 			},
 			"language_info": {
 				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+				"name": "SampleSpark",
+				"type": "Spark",
+				"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -35,7 +54,79 @@
 			{
 				"cell_type": "code",
 				"source": [
-					""
+					"import pandas as pd\r\n",
+					"import numpy as np\r\n",
+					"\r\n",
+					"# Create dataframe with 1000 rows\r\n",
+					"df = pd.DataFrame({\r\n",
+					"    'Sales Order': np.arange(1, 1001),\r\n",
+					"    'Order Date': np.random.choice(pd.date_range(start='2020-01-01', end='2022-01-01'), 1000),\r\n",
+					"    'Customer': [f'Customer {i}' for i in np.random.choice(10, 1000)],\r\n",
+					"    'Product': [f\"Product {chr(65+i%26)}\" for i in np.random.choice(10,1000)],\r\n",
+					"    'Quantity': np.random.randint(1, 100, 1000),\r\n",
+					"    'Price': np.random.randint(10, 1000, 1000),\r\n",
+					"    'Revenue': np.random.randint(1000, 100000, 1000)\r\n",
+					"})\r\n",
+					"\r\n",
+					"# Preview the dataframe\r\n",
+					"df.head()"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import openai\r\n",
+					"\r\n",
+					"openai.api_type = \"azure\"\r\n",
+					"openai.api_base = \"https://resturant-review-classification.openai.azure.com/\"\r\n",
+					"openai.api_version = \"2022-12-01\"\r\n",
+					"openai.api_key = \"1369d83861a247fb9e2113c9f177dc21\""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pre_text = df.head(10).to_json(orient=\"records\")\r\n",
+					"\r\n",
+					"\r\n",
+					"query = input(\" list the columns' name: \")\r\n",
+					"response = openai.Completion.create(\r\n",
+					"  engine=\"test1\",\r\n",
+					"  prompt=pre_text + \"\\n\" + query,\r\n",
+					"  temperature=0.7,\r\n",
+					"  max_tokens=2048,\r\n",
+					"  top_p=0,\r\n",
+					"  frequency_penalty=0,\r\n",
+					"  presence_penalty=0,\r\n",
+					"  best_of=1,\r\n",
+					"  stop=None)\r\n",
+					"\r\n",
+					"response = response.choices[0].text\r\n",
+					"print(\"OpenAI response: \", response)"
 				],
 				"execution_count": null
 			}

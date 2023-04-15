@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "68ce48df-59b1-48b3-b1e4-5553853675ef"
+				"spark.autotune.trackingId": "016171f8-86df-496f-aac9-0054e4129828"
 			}
 		},
 		"metadata": {
@@ -88,7 +88,7 @@
 					"import json\r\n",
 					"import requests"
 				],
-				"execution_count": 1
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",

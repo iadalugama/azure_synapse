@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "09b1d941-4335-4060-9038-f9f14360783a"
+				"spark.autotune.trackingId": "5a32ba9d-726b-4e1c-8022-eeb418b03002"
 			}
 		},
 		"metadata": {
@@ -63,13 +63,31 @@
 					"    'Order Date': np.random.choice(pd.date_range(start='2020-01-01', end='2022-01-01'), 1000),\r\n",
 					"    'Customer': [f'Customer {i}' for i in np.random.choice(10, 1000)],\r\n",
 					"    'Product': [f\"Product {chr(65+i%26)}\" for i in np.random.choice(10,1000)],\r\n",
-					"    'Quantity': np.random.randint(1, 100, 1000),\r\n",
-					"    'Price': np.random.randint(10, 1000, 1000),\r\n",
-					"    'Revenue': np.random.randint(1000, 100000, 1000)\r\n",
+					"    'Quantity': np.random.randint(1, 100, 10),\r\n",
+					"    'Price': np.random.randint(10, 1000, 10),\r\n",
+					"    'Revenue': np.random.randint(1000, 100000, 10)\r\n",
 					"})\r\n",
 					"\r\n",
 					"# Preview the dataframe\r\n",
 					"df.head()"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install openai"
 				],
 				"execution_count": 4
 			},
@@ -113,7 +131,7 @@
 					"pre_text = df.head(10).to_json(orient=\"records\")\r\n",
 					"print(pre_text)"
 				],
-				"execution_count": 7
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -129,8 +147,7 @@
 					}
 				},
 				"source": [
-					"\r\n",
-					"query = input(\" list the columns' name: \")\r\n",
+					"query = input(\"list the columns name:\")\r\n",
 					"response = openai.Completion.create(\r\n",
 					"  engine=\"test1\",\r\n",
 					"  prompt=pre_text + \"\\n\" + query,\r\n",
@@ -145,7 +162,7 @@
 					"response = response.choices[0].text\r\n",
 					"print(\"OpenAI response: \", response)"
 				],
-				"execution_count": 8
+				"execution_count": 7
 			}
 		]
 	}

@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b1d6eb60-2bdf-4782-a65d-5c7d8f4d65ee"
+				"spark.autotune.trackingId": "3490d438-9a48-4b59-ae40-788ed9e027b1"
 			}
 		},
 		"metadata": {
@@ -71,7 +71,7 @@
 					"# Preview the dataframe\r\n",
 					"df.head()"
 				],
-				"execution_count": 11
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
@@ -89,7 +89,7 @@
 				"source": [
 					"pip install openai"
 				],
-				"execution_count": null
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
@@ -112,7 +112,7 @@
 					"openai.api_version = \"2022-12-01\"\r\n",
 					"openai.api_key = \"1369d83861a247fb9e2113c9f177dc21\""
 				],
-				"execution_count": 12
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -131,7 +131,7 @@
 					"pre_text = df.head(10).to_json(orient=\"records\")\r\n",
 					"print(pre_text)"
 				],
-				"execution_count": 13
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
@@ -149,7 +149,7 @@
 				"source": [
 					"query = input(\"Enter your query in natural language: list the columns name\")\r\n",
 					"response = openai.Completion.create(\r\n",
-					"  engine=\"test1\",\r\n",
+					"  engine=\"text-classification\",\r\n",
 					"  prompt=pre_text + \"\\n\" + query,\r\n",
 					"  temperature=0.7,\r\n",
 					"  max_tokens=2048,\r\n",
@@ -162,7 +162,7 @@
 					"response = response.choices[0].text\r\n",
 					"print(\"OpenAI response: \", response)"
 				],
-				"execution_count": 14
+				"execution_count": 20
 			}
 		]
 	}

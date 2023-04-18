@@ -1,6 +1,7 @@
 {
 	"name": "df_avrofile_process_lifeworks_sample",
 	"properties": {
+		"description": "\n\nwildcard pattern -- \n\n41_ctr_ca_04042023_*",
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -9,14 +10,14 @@
 						"referenceName": "AzureDataLakeStorage_generaladls2",
 						"type": "LinkedServiceReference"
 					},
-					"name": "source1"
+					"name": "sourceaescafiles"
 				},
 				{
 					"linkedService": {
 						"referenceName": "AzureDataLakeStorage_generaladls2",
 						"type": "LinkedServiceReference"
 					},
-					"name": "source2"
+					"name": "sourcectrlcafiles"
 				}
 			],
 			"sinks": [
@@ -54,7 +55,7 @@
 				"     format: 'avro',",
 				"     fileSystem: 'row-data',",
 				"     folderPath: 'sample_avro_data',",
-				"     fileName: '46_aes_ca_04042023_1925.avro') ~> source1",
+				"     fileName: '46_aes_ca_04042023_1925.avro') ~> sourceaescafiles",
 				"source(output(",
 				"          SequenceNumber as long,",
 				"          Offset as string,",
@@ -68,8 +69,8 @@
 				"     ignoreNoFilesFound: false,",
 				"     format: 'avro',",
 				"     fileSystem: 'row-data',",
-				"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"41_ctr_ca_04042023_*\"))]) ~> source2",
-				"source1 parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
+				"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"4*.avro\"))]) ~> sourcectrlcafiles",
+				"sourceaescafiles parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
 				"     partitionKey as string,",
 				"     sequenceNumber as string,",
 				"     data as string,",

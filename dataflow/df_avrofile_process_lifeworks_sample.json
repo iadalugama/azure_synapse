@@ -10,6 +10,13 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "source1"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage_generaladls2",
+						"type": "LinkedServiceReference"
+					},
+					"name": "source2"
 				}
 			],
 			"sinks": [
@@ -48,6 +55,20 @@
 				"     fileSystem: 'row-data',",
 				"     folderPath: 'sample_avro_data',",
 				"     fileName: '46_aes_ca_04042023_1925.avro') ~> source1",
+				"source(output(",
+				"          SequenceNumber as long,",
+				"          Offset as string,",
+				"          EnqueuedTimeUtc as string,",
+				"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+				"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+				"          Body as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'avro',",
+				"     fileSystem: 'row-data',",
+				"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"41_ctr*\"))]) ~> source2",
 				"source1 parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
 				"     partitionKey as string,",
 				"     sequenceNumber as string,",

@@ -26,7 +26,7 @@
 						"referenceName": "AzureDataLakeStorage_generaladls2",
 						"type": "LinkedServiceReference"
 					},
-					"name": "sink1"
+					"name": "sinkavrotocsv"
 				}
 			],
 			"transformations": [
@@ -128,7 +128,7 @@
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true) ~> sinkavrotocsv"
 			]
 		}
 	}

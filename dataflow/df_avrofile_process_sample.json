@@ -85,7 +85,6 @@
 				"          schema,",
 				"          templateId,",
 				"          enqueuedTime,",
-				"          temperature,",
 				"          pressure",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",

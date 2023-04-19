@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSql_sample_sql_instance'"
 		},
+		"linkedService_synapse_sample_sales_dw_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedService_synapse_sample_sales_dw'"
+		},
 		"synapsewsp01-WorkspaceDefaultSqlServer_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'synapsewsp01-WorkspaceDefaultSqlServer'",
@@ -146,7 +150,7 @@
 						"type": "WebActivity",
 						"dependsOn": [],
 						"policy": {
-							"timeout": "0.12:00:00",
+							"timeout": "0.12:10:00",
 							"retry": 0,
 							"retryIntervalInSeconds": 30,
 							"secureOutput": false,
@@ -368,6 +372,126 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/pipe_avrofile_process')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "https://github.com/balakreshnan/Samples2021/blob/main/ADF/avroprocessdf.md",
+				"activities": [
+					{
+						"name": "df-process-avro-files",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_avrofile_process_sample",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_sample')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pipe_avrofile_process_lifeworks_sample')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "https://github.com/balakreshnan/Samples2021/blob/main/ADF/avroprocessdf.md",
+				"activities": [
+					{
+						"name": "df-process-avro-files",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_avrofile_process_lifeworks_sample",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceaescafiles": {},
+									"sourcectrlcafiles": {},
+									"sinkavrotocsv": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Avro1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage_generaladls2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Avro",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "row-data"
+					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/DelimitedText1')]",
 			"type": "Microsoft.Synapse/workspaces/datasets",
 			"apiVersion": "2019-06-01-preview",
@@ -553,6 +677,25 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/linkedService_synapse_sample_sales_dw')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('linkedService_synapse_sample_sales_dw_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/synapsewsp01-WorkspaceDefaultSqlServer')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -615,6 +758,278 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/IROnPrem')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_avrofile_process_lifeworks_sample')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "\n\nwildcard pattern -- \n\n41_ctr_ca_04042023_*",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceaescafiles"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourcectrlcafiles"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkavrotocsv"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parse1"
+						},
+						{
+							"name": "flatten1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SequenceNumber as long,",
+						"          Offset as string,",
+						"          EnqueuedTimeUtc as string,",
+						"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Body as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'avro',",
+						"     fileSystem: 'row-data',",
+						"     folderPath: 'sample_avro_data',",
+						"     fileName: '46_aes_ca_04042023_1925.avro') ~> sourceaescafiles",
+						"source(output(",
+						"          SequenceNumber as long,",
+						"          Offset as string,",
+						"          EnqueuedTimeUtc as string,",
+						"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Body as binary",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'avro',",
+						"     fileSystem: 'row-data',",
+						"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"4*.avro\"))]) ~> sourcectrlcafiles",
+						"sourceaescafiles parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
+						"     partitionKey as string,",
+						"     sequenceNumber as string,",
+						"     data as string,",
+						"     approximateArrivalTimestamp as integer),",
+						"     eventSource as string,",
+						"     eventVersion as string,",
+						"     eventID as string,",
+						"     eventName as string,",
+						"     invokeIdentityArn as string,",
+						"     awsRegion as string,",
+						"     eventSourceARN as string)[])[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse1",
+						"parse1 foldDown(unroll(NewBody.Records),",
+						"     mapColumn(",
+						"          eventSource = NewBody.Records.eventSource,",
+						"          eventVersion = NewBody.Records.eventVersion,",
+						"          eventID = NewBody.Records.eventID,",
+						"          eventName = NewBody.Records.eventName,",
+						"          invokeIdentityArn = NewBody.Records.invokeIdentityArn,",
+						"          awsRegion = NewBody.Records.awsRegion,",
+						"          eventSourceARN = NewBody.Records.eventSourceARN,",
+						"          SequenceNumber,",
+						"          kinesispartitionKey = NewBody.Records.kinesis.partitionKey,",
+						"          kinesisSchemaVersion = NewBody.Records.kinesis.kinesisSchemaVersion,",
+						"          kinesissequenceNumber = NewBody.Records.kinesis.sequenceNumber",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"flatten1 select(mapColumn(",
+						"          eventSource,",
+						"          eventVersion,",
+						"          eventID,",
+						"          eventName,",
+						"          invokeIdentityArn,",
+						"          awsRegion,",
+						"          eventSourceARN,",
+						"          SequenceNumber,",
+						"          kinesispartitionKey,",
+						"          kinesisSchemaVersion,",
+						"          kinesissequenceNumber",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'row-data',",
+						"     folderPath: 'sample_avro_data',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkavrotocsv"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_avrofile_process_sample')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "DelimitedText1",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parse1"
+						},
+						{
+							"name": "flatten1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SequenceNumber as long,",
+						"          Offset as string,",
+						"          EnqueuedTimeUtc as string,",
+						"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Body as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'avro',",
+						"     fileSystem: 'row-data',",
+						"     folderPath: 'sample_avro_data',",
+						"     fileName: '22.avro') ~> source1",
+						"source1 parse(NewBody = Body ? (applicationId as string,",
+						"     messageSource as string,",
+						"     deviceId as string,",
+						"     schema as string,",
+						"     templateId as string,",
+						"     enqueuedTime as string,",
+						"     telemetry as (temperature as integer,pressure as integer,magnetometer as (x as integer,",
+						"     y as integer,     z as integer),",
+						"     gyroscope as (x as integer,",
+						"     y as integer,",
+						"     z as integer),",
+						"     accelerometer as (x as integer,",
+						"     y as integer,",
+						"     z as integer),",
+						"     humidity as integer)",
+						"     )[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse1",
+						"parse1 foldDown(unroll(NewBody),",
+						"     mapColumn(",
+						"          applicationId = NewBody.applicationId,",
+						"          messageSource = NewBody.messageSource,",
+						"          deviceId = NewBody.deviceId,",
+						"          schema = NewBody.schema,",
+						"          templateId = NewBody.templateId,",
+						"          enqueuedTime = NewBody.enqueuedTime,",
+						"          pressure = NewBody.telemetry.pressure",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"flatten1 select(mapColumn(",
+						"          applicationId,",
+						"          messageSource,",
+						"          deviceId,",
+						"          schema,",
+						"          templateId,",
+						"          enqueuedTime,",
+						"          pressure",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Column_1 as string,",
+						"          Column_2 as string,",
+						"          Column_3 as string,",
+						"          Column_4 as string,",
+						"          Column_5 as string,",
+						"          Column_6 as string,",
+						"          Column_7 as string,",
+						"          Column_8 as string,",
+						"          Column_9 as string,",
+						"          Column_10 as string,",
+						"          Column_11 as string,",
+						"          Column_12 as string",
+						"     ),",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]",
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
 			"type": "Microsoft.Synapse/workspaces/credentials",
 			"apiVersion": "2019-06-01-preview",
@@ -641,6 +1056,1493 @@
 					"resultLimit": 5000
 				},
 				"type": "SqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Bulk Completion_Copy')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "OpenAI-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SampleSpark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "882c73a0-c3d9-463a-b091-08a82e70ebd1"
+					}
+				},
+				"metadata": {
+					"saveOutput": false,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+						"name": "SampleSpark",
+						"type": "Spark",
+						"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Azure Open AI Summarization Use case\r\n",
+							"\r\n",
+							"This notebook provides an example code showing how to use the Open AI packages for the bulk chat completion for summarization use case. The verbatim dataset is loaded from Azure datalake which contains the verbaige for the specific plant operation defect condition. We are going to summarize that through Open AI GPT3.5 LLM and store the result in the enriched dataset back to datalake."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Required imports\r\n",
+							"import openai\r\n",
+							"import re\r\n",
+							"import pandas as pd\r\n",
+							"import numpy as np\r\n",
+							"import json\r\n",
+							"import requests"
+						],
+						"outputs": [],
+						"execution_count": 5
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Setup Azure OpenAI environment\r\n",
+							"openai.api_type = \"azure\"\r\n",
+							"openai.api_key = \"1369d83861a247fb9e2113c9f177dc21\"\r\n",
+							"openai.api_base = \"https://resturant-review-classification.openai.azure.com/\"\r\n",
+							"openai.api_version = \"2023-03-15-preview\"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 6
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"### Mount Datalake path for accessing datasets"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# Update parameters for your environment\r\n",
+							"storage_account = 'generaladls2'\r\n",
+							"container_name = 'row-data'\r\n",
+							"subfolder = 'sample_csv_data'\r\n",
+							"linkedServiceName = \"AzureDataLakeStorage_generaladls2\"\r\n",
+							"\r\n",
+							"mssparkutils.fs.unmount(\"/openai\")\r\n",
+							"mssparkutils.fs.mount( \r\n",
+							"    f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/\", \r\n",
+							"    \"/openai\", \r\n",
+							"    {\"linkedService\":linkedServiceName} \r\n",
+							") \r\n",
+							"\r\n",
+							"jobId = mssparkutils.env.getJobId() \r\n",
+							"print(f\"Job Id: {jobId}\")\r\n",
+							"\r\n",
+							"\r\n",
+							"# https://generaladls2.blob.core.windows.net/row-data/sample_csv_data/RestaurantReviews.csv"
+						],
+						"outputs": [],
+						"execution_count": 9
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"mssparkutils.fs.ls(f\"synfs:/{jobId}/openai/\")"
+						],
+						"outputs": [],
+						"execution_count": 10
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = pd.read_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/PaintDefectVerbatim.csv\") \r\n",
+							"df"
+						],
+						"outputs": [],
+						"execution_count": 14
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"# s is input text\r\n",
+							"def normalize_text(s, sep_token = \" \\n \"):\r\n",
+							"    s = re.sub(r'\\s+',  ' ', s).strip()\r\n",
+							"    s = re.sub(r\". ,\",\"\",s)\r\n",
+							"    # remove all instances of multiple spaces\r\n",
+							"    s = s.replace(\"..\",\".\")\r\n",
+							"    s = s.replace(\". .\",\".\")\r\n",
+							"    s = s.replace(\"\\n\", \"\")\r\n",
+							"    s = s.strip()\r\n",
+							"    \r\n",
+							"    return s\r\n",
+							"\r\n",
+							"df['verbatim_normalized'] = df[\"verbatim\"].apply(lambda x : normalize_text(x))\r\n",
+							"df\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"class Prompt:\r\n",
+							"    def __init__(self, role, content):\r\n",
+							"        self.role = role\r\n",
+							"        self.content = content\r\n",
+							"\r\n",
+							"\r\n",
+							"sys_prompt = Prompt(\r\n",
+							"    role=\"system\",\r\n",
+							"    content = \"You are an AI assistant that will help me succinctly summarize the failure in 2 words based on the verbatim I provide. I am looking for failure context which best describes the situation.\"\r\n",
+							")\r\n",
+							"prompts = list()\r\n",
+							"prompts.append(sys_prompt)\r\n",
+							"\r\n",
+							"def initiate_chat():\r\n",
+							"    global prompts, openai\r\n",
+							"    response = openai.ChatCompletion.create(\r\n",
+							"        engine=\"ChatGPT\", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.\r\n",
+							"        messages = [sys_prompt.__dict__]\r\n",
+							"    )\r\n",
+							"    result = response['choices'][0]['message']['content']\r\n",
+							"    print(f\"Result: {result}\")\r\n",
+							"    prompts.append(Prompt(role=\"system\", content=result))\r\n",
+							"\r\n",
+							"# Initiate the OpenAI engine\r\n",
+							"initiate_chat()\r\n",
+							"\r\n",
+							""
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"def summarize_verbetim(v):\r\n",
+							"    global prompts, openai, sys_prompt\r\n",
+							"    message = f\"Verbatim: {v} \\n Code: ?\"\r\n",
+							"    prompt = Prompt(role=\"user\", content=message)\r\n",
+							"    prompts.append(prompt)\r\n",
+							"    response = openai.ChatCompletion.create(\r\n",
+							"        engine=\"ChatGPT\", # The deployment name you chose when you deployed the ChatGPT or GPT-4 model.\r\n",
+							"        messages = [sys_prompt.__dict__, prompt.__dict__]\r\n",
+							"    )\r\n",
+							"\r\n",
+							"    result = response['choices'][0]['message']['content']\r\n",
+							"    print(result)\r\n",
+							"    prompts.append(Prompt(role=\"system\", content=result))\r\n",
+							"\r\n",
+							"    return result\r\n",
+							"\r\n",
+							"\r\n",
+							"df['summarization'] = df[\"verbatim_normalized\"].apply(lambda x : summarize_verbetim(x))\r\n",
+							"\r\n",
+							"df_enriched = df.drop(['verbatim'], axis=1, inplace=False)\r\n",
+							"df_enriched"
+						],
+						"outputs": [],
+						"execution_count": 61
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df_enriched.to_csv(f\"abfss://{container_name}@{storage_account}.dfs.core.windows.net/{subfolder}/data/PaintDefectVerbatim_enriched.csv\", sep=',', encoding='utf-8')"
+						],
+						"outputs": [],
+						"execution_count": 64
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/CognitiveServices - OpenAI')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "OpenAI-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"sessionProperties": {
+					"driverMemory": "28g",
+					"driverCores": 4,
+					"executorMemory": "28g",
+					"executorCores": 4,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "743bee29-3f78-4e4c-9d03-23fc01d4eb0a"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "python"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "dd4c8776-6853-4257-bef8-72778724ad57",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"# Azure OpenAI for Big Data\n",
+							"\n",
+							"The Azure OpenAI service can be used to solve a large number of natural language tasks through prompting the completion API. To make it easier to scale your prompting workflows from a few examples to large datasets of examples we have integrated the Azure OpenAI service with the distributed machine learning library [SynapseML](https://www.microsoft.com/en-us/research/blog/synapseml-a-simple-multilingual-and-massively-parallel-machine-learning-library/). This integration makes it easy to use the [Apache Spark](https://spark.apache.org/) distributed computing framework to process millions of prompts with the OpenAI service. This tutorial shows how to apply large language models at a distributed scale using Azure Open AI and Azure Synapse Analytics. \n",
+							"\n",
+							"## Step 1: Prerequisites\n",
+							"\n",
+							"The key prerequisites for this quickstart include a working Azure OpenAI resource, and an Apache Spark cluster with SynapseML installed. We suggest creating a Synapse workspace, but an Azure Databricks, HDInsight, or Spark on Kubernetes, or even a python environment with the `pyspark` package will work. \n",
+							"\n",
+							"1. An Azure OpenAI resource – request access [here](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu) before [creating a resource](https://docs.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal#create-a-resource)\n",
+							"1. [Create a Synapse workspace](https://docs.microsoft.com/en-us/azure/synapse-analytics/get-started-create-workspace)\n",
+							"1. [Create a serverless Apache Spark pool](https://docs.microsoft.com/en-us/azure/synapse-analytics/get-started-analyze-spark#create-a-serverless-apache-spark-pool)\n",
+							"\n",
+							"\n",
+							"## Step 2: Import this guide as a notebook\n",
+							"\n",
+							"The next step is to add this code into your Spark cluster. You can either create a notebook in your Spark platform and copy the code into this notebook to run the demo. Or download the notebook and import it into Synapse Analytics\n",
+							"\n",
+							"1.\t[Download this demo as a notebook](https://github.com/microsoft/SynapseML/blob/master/notebooks/features/cognitive_services/CognitiveServices%20-%20OpenAI.ipynb) (click Raw, then save the file)\n",
+							"1.\tImport the notebook [into the Synapse Workspace](https://docs.microsoft.com/en-us/azure/synapse-analytics/spark/apache-spark-development-using-notebooks#create-a-notebook) or if using Databricks [into the Databricks Workspace](https://docs.microsoft.com/en-us/azure/databricks/notebooks/notebooks-manage#create-a-notebook)\n",
+							"1. Install SynapseML on your cluster. Please see the installation instructions for Synapse at the bottom of [the SynapseML website](https://microsoft.github.io/SynapseML/). Note that this requires pasting an additional cell at the top of the notebook you just imported\n",
+							"3.\tConnect your notebook to a cluster and follow along, editing and rnnung the cells below.\n",
+							"\n",
+							"## Step 3: Fill in your service information\n",
+							"\n",
+							"Next, please edit the cell in the notebook to point to your service. In particular set the `service_name`, `deployment_name`, `location`, and `key` variables to match those for your OpenAI service:"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "1b0db8af-7fe2-40bc-9df4-cc7f274d53f0",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"import os\n",
+							"from pyspark.sql import SparkSession\n",
+							"from synapse.ml.core.platform import running_on_synapse, find_secret\n",
+							"\n",
+							"# Bootstrap Spark Session\n",
+							"spark = SparkSession.builder.getOrCreate()\n",
+							"\n",
+							"if running_on_synapse():\n",
+							"    from notebookutils.visualization import display\n",
+							"\n",
+							"# Fill in the following lines with your service information\n",
+							"service_name = \"synapseml-openai\"\n",
+							"deployment_name = \"gpt-35-turbo\"\n",
+							"deployment_name_embeddings = \"text-search-ada-doc-001\"\n",
+							"deployment_name_embeddings_query = \"text-search-ada-query-001\"\n",
+							"\n",
+							"key = find_secret(\"openai-api-key\")  # please replace this with your key as a string\n",
+							"\n",
+							"assert key is not None and service_name is not None"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "76f069b7-14e8-44ea-97f0-1c49cf02eeed",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"## Step 4: Create a dataset of prompts\n",
+							"\n",
+							"Next, create a dataframe consisting of a series of rows, with one prompt per row. \n",
+							"\n",
+							"You can also load data directly from ADLS or other databases. For more information on loading and preparing Spark dataframes, see the [Apache Spark data loading guide](https://spark.apache.org/docs/latest/sql-data-sources.html)."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "1a4366df-4d40-45a0-b1a7-6086b9c693d2",
+								"showTitle": false,
+								"title": ""
+							},
+							"jupyter": {
+								"outputs_hidden": false,
+								"source_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"df = spark.createDataFrame(\n",
+							"    [\n",
+							"        (\"Hello my name is\",),\n",
+							"        (\"The best code is code thats\",),\n",
+							"        (\"SynapseML is \",),\n",
+							"    ]\n",
+							").toDF(\"prompt\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "fb48578c-e4b3-49fc-9ee2-2f8ae8808c19",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"## Step 5: Create the OpenAICompletion Apache Spark Client\n",
+							"\n",
+							"To apply the OpenAI Completion service to your dataframe you just created, create an OpenAICompletion object which serves as a distributed client. Parameters of the service can be set either with a single value, or by a column of the dataframe with the appropriate setters on the `OpenAICompletion` object. Here we are setting `maxTokens` to 200. A token is around 4 characters, and this limit applies to the sum of the prompt and the result. We are also setting the `promptCol` parameter with the name of the prompt column in the dataframe."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "2dca7a9d-6092-48af-8653-10c141fd440d",
+								"showTitle": false,
+								"title": ""
+							},
+							"jupyter": {
+								"outputs_hidden": false,
+								"source_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.cognitive import OpenAICompletion\n",
+							"\n",
+							"completion = (\n",
+							"    OpenAICompletion()\n",
+							"    .setSubscriptionKey(key)\n",
+							"    .setDeploymentName(deployment_name)\n",
+							"    .setUrl(\"https://{}.openai.azure.com/\".format(service_name))\n",
+							"    .setMaxTokens(200)\n",
+							"    .setPromptCol(\"prompt\")\n",
+							"    .setErrorCol(\"error\")\n",
+							"    .setOutputCol(\"completions\")\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "64b2a454-65ab-45ec-9946-d92539899781",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"## Step 5: Transform the dataframe with the OpenAICompletion Client\n",
+							"\n",
+							"Now that you have the dataframe and the completion client, you can transform your input dataset and add a column called `completions` with all of the information the service adds. We will select out just the text for simplicity."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "90684f9f-5c74-463f-a809-75a219489d7f",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import col\n",
+							"\n",
+							"completed_df = completion.transform(df).cache()\n",
+							"display(\n",
+							"    completed_df.select(\n",
+							"        col(\"prompt\"),\n",
+							"        col(\"error\"),\n",
+							"        col(\"completions.choices.text\").getItem(0).alias(\"text\"),\n",
+							"    )\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "d217c822-a213-43b3-aeba-2653e52b3421",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"Your output should look something like this. Please note completion text will be different\n",
+							"\n",
+							"| **prompt**                 \t| **error** \t| **text**                                                                                                                              \t|\n",
+							"|-----------------------------\t|-----------\t|---------------------------------------------------------------------------------------------------------------------------------------\t|\n",
+							"| Hello my name is            \t| null      \t| Makaveli I'm eighteen years old and I want to   be a rapper when I grow up I love writing and making music I'm from Los   Angeles, CA \t|\n",
+							"| The best code is code thats \t| null      \t| understandable This is a subjective statement,   and there is no definitive answer.                                                   \t|\n",
+							"| SynapseML is                \t| null      \t| A machine learning algorithm that is able to learn how to predict the future outcome of events.                                       \t|"
+						]
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "9111da73-81f2-48e5-9a0c-eb65e1567f91",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"## Additional Usage Examples\n",
+							"\n",
+							"### Improve throughput with request batching \n",
+							"\n",
+							"The example above makes several requests to the service, one for each prompt. To complete multiple prompts in a single request, use batch mode. First, in the OpenAICompletion object, instead of setting the Prompt column to \"Prompt\", specify \"batchPrompt\" for the BatchPrompt column.\n",
+							"To do so, create a dataframe with a list of prompts per row.\n",
+							"\n",
+							"**Note** that as of this writing there is currently a limit of 20 prompts in a single request, as well as a hard limit of 2048 \"tokens\", or approximately 1500 words."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "9f9b7953-6d96-4f83-b61d-c396cefb28ea",
+								"showTitle": false,
+								"title": ""
+							},
+							"jupyter": {
+								"outputs_hidden": false,
+								"source_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"batch_df = spark.createDataFrame(\n",
+							"    [\n",
+							"        ([\"The time has come\", \"Pleased to\", \"Today stocks\", \"Here's to\"],),\n",
+							"        ([\"The only thing\", \"Ask not what\", \"Every litter\", \"I am\"],),\n",
+							"    ]\n",
+							").toDF(\"batchPrompt\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "0bb5daf9-8155-460c-b2dd-e1ca302a3776",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"Next we create the OpenAICompletion object. Rather than setting the prompt column, set the batchPrompt column if your column is of type `Array[String]`."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "8411e5ba-7f22-4ac9-a78e-1746a7ccc8bc",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"batch_completion = (\n",
+							"    OpenAICompletion()\n",
+							"    .setSubscriptionKey(key)\n",
+							"    .setDeploymentName(deployment_name)\n",
+							"    .setUrl(\"https://{}.openai.azure.com/\".format(service_name))\n",
+							"    .setMaxTokens(200)\n",
+							"    .setBatchPromptCol(\"batchPrompt\")\n",
+							"    .setErrorCol(\"error\")\n",
+							"    .setOutputCol(\"completions\")\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "be2a0d15-40e1-4a3d-a879-d7d0e0129b35",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"In the call to transform a request will then be made per row. Since there are multiple prompts in a single row, each request will be sent with all prompts in that row. The results will contain a row for each row in the request."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "a6fb7509-f582-47bd-8b57-f59d51c03eb3",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"completed_batch_df = batch_completion.transform(batch_df).cache()\n",
+							"display(completed_batch_df)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "2dd7259b-173a-41ef-b98e-7b1dc0df875f",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"### Using an automatic minibatcher\n",
+							"\n",
+							"If your data is in column format, you can transpose it to row format using SynapseML's `FixedMiniBatcherTransformer`."
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "04212778-8002-4e30-bf31-b7511c5776fd",
+								"showTitle": false,
+								"title": ""
+							},
+							"jupyter": {
+								"outputs_hidden": false,
+								"source_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.types import StringType\n",
+							"from synapse.ml.stages import FixedMiniBatchTransformer\n",
+							"from synapse.ml.core.spark import FluentAPI\n",
+							"\n",
+							"completed_autobatch_df = (\n",
+							"    df.coalesce(\n",
+							"        1\n",
+							"    )  # Force a single partition so that our little 4-row dataframe makes a batch of size 4, you can remove this step for large datasets\n",
+							"    .mlTransform(FixedMiniBatchTransformer(batchSize=4))\n",
+							"    .withColumnRenamed(\"prompt\", \"batchPrompt\")\n",
+							"    .mlTransform(batch_completion)\n",
+							")\n",
+							"\n",
+							"display(completed_autobatch_df)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "f1611cd5-1af9-458f-a1d5-b1f517194cc8",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"### Prompt engineering for translation\n",
+							"\n",
+							"The Azure OpenAI service can solve many different natural language tasks through [prompt engineering](https://docs.microsoft.com/en-us/azure/cognitive-services/openai/how-to/completions). Here we show an example of prompting for language translation:"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "0cee629b-240d-411f-a067-9f7b9ac6ce5d",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"translate_df = spark.createDataFrame(\n",
+							"    [\n",
+							"        (\"Japanese: Ookina hako \\nEnglish: Big box \\nJapanese: Midori tako\\nEnglish:\",),\n",
+							"        (\n",
+							"            \"French: Quel heure et il au Montreal? \\nEnglish: What time is it in Montreal? \\nFrench: Ou est le poulet? \\nEnglish:\",\n",
+							"        ),\n",
+							"    ]\n",
+							").toDF(\"prompt\")\n",
+							"\n",
+							"display(completion.transform(translate_df))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "3a726683-8e19-4ebf-8244-bde82ec4fdbe",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"### Prompt for question answering\n",
+							"\n",
+							"Here, we prompt GPT-3 for general-knowledge question answering:"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"application/vnd.databricks.v1+cell": {
+								"nuid": "831abdac-4b6c-4b7d-b99a-43dcb75c4169",
+								"showTitle": false,
+								"title": ""
+							}
+						},
+						"source": [
+							"qa_df = spark.createDataFrame(\n",
+							"    [\n",
+							"        (\n",
+							"            \"Q: Where is the Grand Canyon?\\nA: The Grand Canyon is in Arizona.\\n\\nQ: What is the weight of the Burj Khalifa in kilograms?\\nA:\",\n",
+							"        )\n",
+							"    ]\n",
+							").toDF(\"prompt\")\n",
+							"\n",
+							"display(completion.transform(qa_df))"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"# OpenAI Embeddings\n",
+							"\n",
+							"We will use t-SNE to reduce the dimensionality of the embeddings from 1536 to 2. Once the embeddings are reduced to two dimensions, we can plot them in a 2D scatter plot."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from synapse.ml.cognitive import OpenAIEmbedding\n",
+							"\n",
+							"embedding = (\n",
+							"    OpenAIEmbedding()\n",
+							"    .setSubscriptionKey(key)\n",
+							"    .setDeploymentName(deployment_name_embeddings)\n",
+							"    .setUrl(\"https://{}.openai.azure.com/\".format(service_name))\n",
+							"    .setTextCol(\"combined\")\n",
+							"    .setErrorCol(\"error\")\n",
+							"    .setOutputCol(\"embeddings\")\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"import pyspark.sql.functions as F\n",
+							"\n",
+							"df = spark.read.options(inferSchema=\"True\", delimiter=\",\", header=True).csv(\n",
+							"    \"wasbs://publicwasb@mmlspark.blob.core.windows.net/fine_food_reviews_1k.csv\"\n",
+							")\n",
+							"\n",
+							"df = df.withColumn(\n",
+							"    \"combined\",\n",
+							"    F.format_string(\"Title: %s; Content: %s\", F.trim(df.Summary), F.trim(df.Text)),\n",
+							")\n",
+							"\n",
+							"display(df)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from pyspark.sql.functions import col\n",
+							"\n",
+							"completed_df = embedding.transform(df).cache()\n",
+							"display(completed_df)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Retrieve embeddings"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"import numpy as np\n",
+							"\n",
+							"matrix = np.array(completed_df.select(\"embeddings\").collect())[:, 0, :]\n",
+							"matrix.shape"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Reduce dimensionality\n",
+							"We reduce the dimensionality to 2 dimensions using t-SNE decomposition."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"import pandas as pd\n",
+							"from sklearn.manifold import TSNE\n",
+							"import numpy as np\n",
+							"\n",
+							"# Create a t-SNE model and transform the data\n",
+							"tsne = TSNE(\n",
+							"    n_components=2, perplexity=15, random_state=42, init=\"random\", learning_rate=200\n",
+							")\n",
+							"vis_dims = tsne.fit_transform(matrix)\n",
+							"vis_dims.shape"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Plot the embeddings\n",
+							"We colour each review by its star rating, ranging from red for negative reviews, to green for positive reviews..\n",
+							"\n",
+							"We can observe a decent data separation even in the reduced 2 dimensions."
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"import matplotlib.pyplot as plt\n",
+							"import matplotlib\n",
+							"import numpy as np\n",
+							"\n",
+							"scores = np.array(completed_df.select(\"Score\").collect()).reshape(-1)\n",
+							"\n",
+							"colors = [\"red\", \"darkorange\", \"gold\", \"turquoise\", \"darkgreen\"]\n",
+							"x = [x for x, y in vis_dims]\n",
+							"y = [y for x, y in vis_dims]\n",
+							"color_indices = scores - 1\n",
+							"\n",
+							"colormap = matplotlib.colors.ListedColormap(colors)\n",
+							"plt.scatter(x, y, c=color_indices, cmap=colormap, alpha=0.3)\n",
+							"for score in [0, 1, 2, 3, 4]:\n",
+							"    avg_x = np.array(x)[scores - 1 == score].mean()\n",
+							"    avg_y = np.array(y)[scores - 1 == score].mean()\n",
+							"    color = colors[score]\n",
+							"    plt.scatter(avg_x, avg_y, marker=\"x\", color=color, s=100)\n",
+							"\n",
+							"plt.title(\"Amazon ratings visualized in language using t-SNE\")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Use embeddings to build a semantic search Index\n",
+							"\n",
+							"Note that for some OpenAI models, users should use separate models for embedding documents and queries. These models are denoted by the \"-doc\" and \"-query\" suffixes respectively. "
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"embedding_query = (\n",
+							"    OpenAIEmbedding()\n",
+							"    .setSubscriptionKey(key)\n",
+							"    .setDeploymentName(deployment_name_embeddings_query)\n",
+							"    .setUrl(\"https://{}.openai.azure.com/\".format(service_name))\n",
+							"    .setTextCol(\"query\")\n",
+							"    .setErrorCol(\"error\")\n",
+							"    .setOutputCol(\"embeddings\")\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Create a dataframe of search queries\n",
+							"\n",
+							"Note: The data types of the ID columns in the document and query dataframes should be the same"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"query_df = (\n",
+							"    spark.createDataFrame(\n",
+							"        [\n",
+							"            (\n",
+							"                0,\n",
+							"                \"desserts\",\n",
+							"            ),\n",
+							"            (\n",
+							"                1,\n",
+							"                \"disgusting\",\n",
+							"            ),\n",
+							"        ]\n",
+							"    )\n",
+							"    .toDF(\"id\", \"query\")\n",
+							"    .withColumn(\"id\", F.col(\"id\").cast(\"int\"))\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Generate embeddings for queries"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"completed_query_df = embedding_query.transform(query_df).cache()"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Build index for fast retrieval"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"from synapse.ml.nn import *\n",
+							"\n",
+							"knn = (\n",
+							"    KNN()\n",
+							"    .setFeaturesCol(\"embeddings\")\n",
+							"    .setValuesCol(\"id\")\n",
+							"    .setOutputCol(\"output\")\n",
+							"    .setK(10)\n",
+							")  # top-k for retrieval\n",
+							"\n",
+							"knn_index = knn.fit(completed_df)"
+						],
+						"outputs": [],
+						"execution_count": null
+					},
+					{
+						"cell_type": "markdown",
+						"source": [
+							"## Retrieve results"
+						]
+					},
+					{
+						"cell_type": "code",
+						"source": [
+							"df_matches = knn_index.transform(completed_query_df).cache()\n",
+							"\n",
+							"df_result = (\n",
+							"    df_matches.withColumn(\"match\", F.explode(\"output\"))\n",
+							"    .join(df, df[\"id\"] == F.col(\"match.value\"))\n",
+							"    .select(\"query\", F.col(\"combined\"), \"match.distance\")\n",
+							")\n",
+							"\n",
+							"display(df_result)"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/OpenAI-Resturant-Classification')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "OpenAI-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SampleSpark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "8ad689af-63c2-4a98-ac4f-6226152c2b2b"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+						"name": "SampleSpark",
+						"type": "Spark",
+						"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"from synapse.ml.core.platform import find_secret\r\n",
+							"\r\n",
+							"# Fill in the following lines with your service information\r\n",
+							"service_name = \"rest-review\" # Name of your OpenAI service\r\n",
+							"deployment_name = \"text-davinci-002\" # Name of your deployment in OpenAI\r\n",
+							"key = find_secret(\"opanaikey\", \"kv-t01\")  # replace this with your secret and keyvault"
+						],
+						"outputs": [],
+						"execution_count": 21
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"from pyspark.sql.types import *\r\n",
+							"from pyspark.sql.functions import *\r\n",
+							"\r\n",
+							"df = spark.read.option('header', 'true') \\\r\n",
+							"                .option('delimiter', ',') \\\r\n",
+							"                .csv('abfss://row-data@generaladls2.dfs.core.windows.net/sample_csv_data/RestaurantReviews.csv')\r\n",
+							"\r\n",
+							"display(df)\r\n",
+							"\r\n",
+							"# https://generaladls2.blob.core.windows.net/row-data/sample_csv_data/RestaurantReviews.csv"
+						],
+						"outputs": [],
+						"execution_count": 22
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							},
+							"collapsed": false
+						},
+						"source": [
+							"dfprompt = df.withColumn(\"prompt\",\\\r\n",
+							"                concat(lit(\"Classify the sentiment of following restaurant review. \\n \\\r\n",
+							"                Classifications: [Positive, Negative , Neutral] \\n Review:\\\"\\\"\\\" \")\\\r\n",
+							"                , col(\"Review\")\\\r\n",
+							"                ,lit(\"\\\"\\\"\\\"\\nClassification:\")))\\\r\n",
+							"            \r\n",
+							"\r\n",
+							"display(dfprompt)"
+						],
+						"outputs": [],
+						"execution_count": 23
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from synapse.ml.cognitive import OpenAICompletion\r\n",
+							"\r\n",
+							"completion = (\r\n",
+							"    OpenAICompletion()\r\n",
+							"    .setSubscriptionKey(key)\r\n",
+							"    .setDeploymentName(deployment_name)\r\n",
+							"    .setUrl(\"https://{}.openai.azure.com/\".format(service_name))\r\n",
+							"    #.setMaxTokens(200)\r\n",
+							"    .setPromptCol(\"prompt\")\r\n",
+							"    .setErrorCol(\"error\")\r\n",
+							"    .setOutputCol(\"response\")\r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": 24
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import col\r\n",
+							"\r\n",
+							"completed_df = completion.transform(dfprompt).cache()\r\n",
+							"\r\n",
+							"display(completed_df)"
+						],
+						"outputs": [],
+						"execution_count": 25
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"from pyspark.sql.functions import col\r\n",
+							"\r\n",
+							"display(\r\n",
+							"    completed_df.select( \r\n",
+							"        col('Restaurant'), \r\n",
+							"        col('Review'), \r\n",
+							"        col('response.choices.text').getItem(0).alias('openai_sentiment')     \r\n",
+							"    )\r\n",
+							"    \r\n",
+							")"
+						],
+						"outputs": [],
+						"execution_count": null
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/QueryinyStructuredDataWithOpenAI')]",
+			"type": "Microsoft.Synapse/workspaces/notebooks",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"folder": {
+					"name": "OpenAI-test"
+				},
+				"nbformat": 4,
+				"nbformat_minor": 2,
+				"bigDataPool": {
+					"referenceName": "SampleSpark",
+					"type": "BigDataPoolReference"
+				},
+				"sessionProperties": {
+					"driverMemory": "56g",
+					"driverCores": 8,
+					"executorMemory": "56g",
+					"executorCores": 8,
+					"numExecutors": 2,
+					"conf": {
+						"spark.dynamicAllocation.enabled": "false",
+						"spark.dynamicAllocation.minExecutors": "2",
+						"spark.dynamicAllocation.maxExecutors": "2",
+						"spark.autotune.trackingId": "3490d438-9a48-4b59-ae40-788ed9e027b1"
+					}
+				},
+				"metadata": {
+					"saveOutput": true,
+					"enableDebugMode": false,
+					"kernelspec": {
+						"name": "synapse_pyspark",
+						"display_name": "Synapse PySpark"
+					},
+					"language_info": {
+						"name": "python"
+					},
+					"a365ComputeOptions": {
+						"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+						"name": "SampleSpark",
+						"type": "Spark",
+						"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+						"auth": {
+							"type": "AAD",
+							"authResource": "https://dev.azuresynapse.net"
+						},
+						"sparkVersion": "3.2",
+						"nodeCount": 3,
+						"cores": 8,
+						"memory": 56
+					},
+					"sessionKeepAliveTimeout": 30
+				},
+				"cells": [
+					{
+						"cell_type": "code",
+						"source": [
+							"import pandas as pd\r\n",
+							"import numpy as np\r\n",
+							"\r\n",
+							"# Create dataframe with 1000 rows\r\n",
+							"df = pd.DataFrame({\r\n",
+							"    'Sales Order': np.arange(1, 11),\r\n",
+							"    'Order Date': np.random.choice(pd.date_range(start='2020-01-01', end='2022-01-01'), 10),\r\n",
+							"    'Customer': [f'Customer {i}' for i in np.random.choice(10, 10)],\r\n",
+							"    'Product': [f\"Product {chr(65+i%26)}\" for i in np.random.choice(10,10)],\r\n",
+							"    'Quantity': np.random.randint(1, 100, 10),\r\n",
+							"    'Price': np.random.randint(10, 1000, 10),\r\n",
+							"    'Revenue': np.random.randint(1000, 100000, 10)\r\n",
+							"})\r\n",
+							"\r\n",
+							"# Preview the dataframe\r\n",
+							"df.head()"
+						],
+						"outputs": [],
+						"execution_count": 15
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pip install openai"
+						],
+						"outputs": [],
+						"execution_count": 16
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"import openai\r\n",
+							"\r\n",
+							"openai.api_type = \"azure\"\r\n",
+							"openai.api_base = \"https://resturant-review-classification.openai.azure.com/\"\r\n",
+							"openai.api_version = \"2022-12-01\"\r\n",
+							"openai.api_key = \"1369d83861a247fb9e2113c9f177dc21\""
+						],
+						"outputs": [],
+						"execution_count": 17
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"pre_text = df.head(10).to_json(orient=\"records\")\r\n",
+							"print(pre_text)"
+						],
+						"outputs": [],
+						"execution_count": 18
+					},
+					{
+						"cell_type": "code",
+						"metadata": {
+							"jupyter": {
+								"source_hidden": false,
+								"outputs_hidden": false
+							},
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"query = input(\"Enter your query in natural language: list the columns name\")\r\n",
+							"response = openai.Completion.create(\r\n",
+							"  engine=\"text-classification\",\r\n",
+							"  prompt=pre_text + \"\\n\" + query,\r\n",
+							"  temperature=0.7,\r\n",
+							"  max_tokens=2048,\r\n",
+							"  top_p=0,\r\n",
+							"  frequency_penalty=0,\r\n",
+							"  presence_penalty=0,\r\n",
+							"  best_of=1,\r\n",
+							"  stop=None)\r\n",
+							"\r\n",
+							"response = response.choices[0].text\r\n",
+							"print(\"OpenAI response: \", response)"
+						],
+						"outputs": [],
+						"execution_count": 20
+					}
+				]
 			},
 			"dependsOn": []
 		},

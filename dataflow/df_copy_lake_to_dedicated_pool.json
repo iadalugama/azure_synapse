@@ -36,7 +36,6 @@
 				"     updateable: false,",
 				"     deletable: false,",
 				"     upsertable: false,",
-				"     recreate: true,",
 				"     allowCopyCommand: true,",
 				"     staged: true,",
 				"     skipDuplicateMapInputs: true,",

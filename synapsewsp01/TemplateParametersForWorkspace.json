@@ -17,6 +17,9 @@
 		"synapsewsp01-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsewsp01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"linkedService_synapse_sample_lake_db_connectionString": {
+			"value": ""
+		},
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"value": ""
 		},

@@ -1,5 +1,5 @@
 {
-	"name": "Dataflow1",
+	"name": "df_copy_lake_to_dedicated_pool",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {

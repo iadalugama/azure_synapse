@@ -3,9 +3,16 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "df_copy_lake_to_dedicated_pool",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "get_lake_table_list",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -16,7 +23,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "Dataflow1",
+						"referenceName": "df_copy_lake_to_dedicated_pool",
 						"type": "DataFlowReference"
 					},
 					"staging": {
@@ -37,7 +44,7 @@
 				}
 			},
 			{
-				"name": "Lookup1",
+				"name": "get_lake_table_list",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -58,7 +65,8 @@
 					"dataset": {
 						"referenceName": "ds_AzureSynapseAnalytics_lake_db",
 						"type": "DatasetReference"
-					}
+					},
+					"firstRowOnly": false
 				}
 			}
 		],

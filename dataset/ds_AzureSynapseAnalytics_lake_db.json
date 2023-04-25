@@ -1,0 +1,12 @@
+{
+	"name": "ds_AzureSynapseAnalytics_lake_db",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedService_synapse_sample_lake_db",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlDWTable",
+		"schema": []
+	}
+}

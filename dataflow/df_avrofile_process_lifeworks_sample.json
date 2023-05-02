@@ -31,13 +31,16 @@
 			],
 			"transformations": [
 				{
-					"name": "parse1"
-				},
-				{
 					"name": "flatten1"
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "parse1"
+				},
+				{
+					"name": "parse2"
 				}
 			],
 			"scriptLines": [
@@ -70,38 +73,13 @@
 				"     format: 'avro',",
 				"     fileSystem: 'row-data',",
 				"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"4*.avro\"))]) ~> sourcectrlcafiles",
-				"sourceaescafiles parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
-				"     partitionKey as string,",
-				"     sequenceNumber as string,",
-				"     data as string,",
-				"     approximateArrivalTimestamp as integer),",
-				"     eventSource as string,",
-				"     eventVersion as string,",
-				"     eventID as string,",
-				"     eventName as string,",
-				"     invokeIdentityArn as string,",
-				"     awsRegion as string,",
-				"     eventSourceARN as string)[])[],",
-				"     format: 'json',",
-				"     documentForm: 'arrayOfDocuments') ~> parse1",
-				"parse1 foldDown(unroll(NewBody.Records),",
+				"parse1 foldDown(unroll(newbody.Records, newbody.Records),",
 				"     mapColumn(",
-				"          eventSource = NewBody.Records.eventSource,",
-				"          eventVersion = NewBody.Records.eventVersion,",
-				"          eventID = NewBody.Records.eventID,",
-				"          eventName = NewBody.Records.eventName,",
-				"          invokeIdentityArn = NewBody.Records.invokeIdentityArn,",
-				"          awsRegion = NewBody.Records.awsRegion,",
-				"          eventSourceARN = NewBody.Records.eventSourceARN,",
-				"          SequenceNumber,",
-				"          kinesispartitionKey = NewBody.Records.kinesis.partitionKey,",
-				"          kinesisSchemaVersion = NewBody.Records.kinesis.kinesisSchemaVersion,",
-				"          kinesissequenceNumber = NewBody.Records.kinesis.sequenceNumber,",
-				"          data = NewBody.Records.kinesis.data",
+				"          data = newbody.Records.kinesis.data",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
-				"flatten1 select(mapColumn(",
+				"parse2 select(mapColumn(",
 				"          eventSource,",
 				"          eventVersion,",
 				"          eventID,",
@@ -117,6 +95,21 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
+				"sourceaescafiles parse(newbody = Body ? (Records as ",
+				"",
+				"(kinesis as ",
+				"",
+				"(kinesisSchemaVersion as string,",
+				"     partitionKey as string,",
+				"     sequenceNumber as string,",
+				"     data as string,",
+				"     approximateArrivalTimestamp as integer)",
+				"     )[])[],",
+				"     format: 'json',",
+				"     documentForm: 'documentPerLine') ~> parse1",
+				"flatten1 parse(data = data,",
+				"     format: 'json',",
+				"     documentForm: 'documentPerLine') ~> parse2",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delimited',",

@@ -188,14 +188,14 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     saveOrder: 2) ~> sinkavrotocsv",
+				"     saveOrder: 1) ~> sinkavrotocsv",
 				"split1@sink1 sink(validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     store: 'cache',",
 				"     format: 'inline',",
 				"     output: true,",
-				"     saveOrder: 1) ~> sink1"
+				"     saveOrder: 2) ~> sink1"
 			]
 		}
 	}

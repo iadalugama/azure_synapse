@@ -1,0 +1,67 @@
+{
+	"name": "pipe_avrofile_process_test",
+	"properties": {
+		"description": "https://github.com/balakreshnan/Samples2021/blob/main/ADF/avroprocessdf.md",
+		"activities": [
+			{
+				"name": "df-process-avro-files",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_avrofile_process_lifeworks_sample",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "None"
+				}
+			},
+			{
+				"name": "Set variable Avro file row written to csv",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "df-process-avro-files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "avro_rowread_count",
+					"value": {
+						"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sinkavrotocsv.rowsWritten)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"avro_rowread_arr": {
+				"type": "Array"
+			},
+			"sql_rowwritten_arr": {
+				"type": "Array"
+			},
+			"avro_rowread_count": {
+				"type": "String"
+			},
+			"sql_rowwritten_count": {
+				"type": "String"
+			}
+		},
+		"annotations": []
+	}
+}

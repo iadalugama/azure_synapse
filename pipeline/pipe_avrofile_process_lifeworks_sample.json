@@ -24,10 +24,7 @@
 						"coreCount": 8,
 						"computeType": "General"
 					},
-					"traceLevel": "None",
-					"cacheSinks": {
-						"firstRowOnly": false
-					}
+					"traceLevel": "None"
 				}
 			}
 		],

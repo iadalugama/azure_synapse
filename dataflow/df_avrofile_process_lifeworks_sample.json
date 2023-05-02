@@ -15,14 +15,14 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "DelimitedText1",
-						"type": "DatasetReference"
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage_generaladls2",
+						"type": "LinkedServiceReference"
 					},
 					"name": "sinkavrotocsv"
 				},
 				{
-					"name": "sink1"
+					"name": "sink1tocache"
 				}
 			],
 			"transformations": [
@@ -68,10 +68,9 @@
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
 				"parse2 select(mapColumn(",
-				"          Name = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.InboundQueues[1].Name,",
-				"          Channel = data[1].CurrentAgentSnapshot.Contacts[1].Channel,",
-				"          FirstName = data[1].CurrentAgentSnapshot.Configuration.FirstName,",
-				"          AutoAccept = data[1].PreviousAgentSnapshot.Configuration.AutoAccept",
+				"          Name = data[1].CurrentAgentSnapshot.AgentStatus.Name,",
+				"          StartTimestamp = data[1].CurrentAgentSnapshot.AgentStatus.StartTimestamp,",
+				"          Channel = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.Concurrency[1].Channel",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -169,20 +168,13 @@
 				"     disjoint: false) ~> split1@(sinkavrotocsv, sink1)",
 				"split1@sinkavrotocsv sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          Column_1 as string,",
-				"          Column_2 as string,",
-				"          Column_3 as string,",
-				"          Column_4 as string,",
-				"          Column_5 as string,",
-				"          Column_6 as string,",
-				"          Column_7 as string,",
-				"          Column_8 as string,",
-				"          Column_9 as string,",
-				"          Column_10 as string,",
-				"          Column_11 as string,",
-				"          Column_12 as string",
-				"     ),",
+				"     format: 'delimited',",
+				"     fileSystem: 'row-data',",
+				"     folderPath: 'sample_csv_data',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: false,",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
@@ -195,7 +187,7 @@
 				"     store: 'cache',",
 				"     format: 'inline',",
 				"     output: true,",
-				"     saveOrder: 1) ~> sink1"
+				"     saveOrder: 1) ~> sink1tocache"
 			]
 		}
 	}

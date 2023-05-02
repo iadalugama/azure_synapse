@@ -17,7 +17,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_avrofile_process_lifeworks_sample",
+						"referenceName": "df_avrofile_process_test",
 						"type": "DataFlowReference"
 					},
 					"compute": {

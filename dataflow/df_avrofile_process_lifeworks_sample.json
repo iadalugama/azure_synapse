@@ -22,7 +22,7 @@
 					"name": "sinkavrotocsv"
 				},
 				{
-					"name": "sink1tocache"
+					"name": "sinkAvroToCache"
 				}
 			],
 			"transformations": [
@@ -42,7 +42,7 @@
 					"name": "derivedColumn1"
 				},
 				{
-					"name": "split1"
+					"name": "SplitCsvAndCache"
 				}
 			],
 			"scriptLines": [
@@ -165,8 +165,8 @@
 				"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
 				"select1 split(true(),",
 				"     true(),",
-				"     disjoint: true) ~> split1@(sinkavrotocsv, sink1)",
-				"split1@sinkavrotocsv sink(allowSchemaDrift: true,",
+				"     disjoint: true) ~> SplitCsvAndCache@(sinkAvroToCsv, sinkAvroToCache)",
+				"SplitCsvAndCache@sinkAvroToCsv sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delimited',",
 				"     fileSystem: 'row-data',",
@@ -181,13 +181,13 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     saveOrder: 2) ~> sinkavrotocsv",
-				"split1@sink1 sink(validateSchema: false,",
+				"SplitCsvAndCache@sinkAvroToCache sink(validateSchema: false,",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     store: 'cache',",
 				"     format: 'inline',",
 				"     output: true,",
-				"     saveOrder: 1) ~> sink1tocache"
+				"     saveOrder: 1) ~> sinkAvroToCache"
 			]
 		}
 	}

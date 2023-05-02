@@ -15,11 +15,14 @@
 			],
 			"sinks": [
 				{
-					"linkedService": {
-						"referenceName": "AzureDataLakeStorage_generaladls2",
-						"type": "LinkedServiceReference"
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
 					},
 					"name": "sinkavrotocsv"
+				},
+				{
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -37,6 +40,9 @@
 				},
 				{
 					"name": "derivedColumn1"
+				},
+				{
+					"name": "split1"
 				}
 			],
 			"scriptLines": [
@@ -63,7 +69,9 @@
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
 				"parse2 select(mapColumn(",
 				"          Name = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.InboundQueues[1].Name,",
-				"          Channel = data[1].CurrentAgentSnapshot.Contacts[1].Channel",
+				"          Channel = data[1].CurrentAgentSnapshot.Contacts[1].Channel,",
+				"          FirstName = data[1].CurrentAgentSnapshot.Configuration.FirstName,",
+				"          AutoAccept = data[1].PreviousAgentSnapshot.Configuration.AutoAccept",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -156,20 +164,38 @@
 				"     format: 'json',",
 				"     documentForm: 'documentPerLine') ~> parse2",
 				"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
-				"select1 sink(allowSchemaDrift: true,",
+				"select1 split(true(),",
+				"     true(),",
+				"     disjoint: true) ~> split1@(sinkavrotocsv, sink1)",
+				"split1@sinkavrotocsv sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     format: 'delimited',",
-				"     fileSystem: 'row-data',",
-				"     folderPath: 'sample_avro_data',",
-				"     columnDelimiter: ',',",
-				"     escapeChar: '\\\\',",
-				"     quoteChar: '\\\"',",
-				"     columnNamesAsHeader: false,",
+				"     input(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string,",
+				"          Column_4 as string,",
+				"          Column_5 as string,",
+				"          Column_6 as string,",
+				"          Column_7 as string,",
+				"          Column_8 as string,",
+				"          Column_9 as string,",
+				"          Column_10 as string,",
+				"          Column_11 as string,",
+				"          Column_12 as string",
+				"     ),",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sinkavrotocsv"
+				"     skipDuplicateMapOutputs: true,",
+				"     saveOrder: 2) ~> sinkavrotocsv",
+				"split1@sink1 sink(validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     store: 'cache',",
+				"     format: 'inline',",
+				"     output: true,",
+				"     saveOrder: 1) ~> sink1"
 			]
 		}
 	}

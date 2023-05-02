@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSql_sample_sql_instance'"
 		},
+		"linkedService_synapse_sample_lake_db_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'linkedService_synapse_sample_lake_db'"
+		},
 		"linkedService_synapse_sample_sales_dw_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'linkedService_synapse_sample_sales_dw'"
@@ -23,10 +27,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'synapsewsp01-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsewsp01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
-		},
-		"linkedService_synapse_sample_lake_db_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'linkedService_synapse_sample_lake_db'"
 		},
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"type": "secureString",
@@ -449,8 +449,8 @@
 								"parameters": {},
 								"datasetParameters": {
 									"sourceaescafiles": {},
-									"sourcectrlcafiles": {},
-									"sinkavrotocsv": {}
+									"sinkavrotocsv": {},
+									"sink1tocache": {}
 								}
 							},
 							"staging": {},
@@ -458,7 +458,8 @@
 								"coreCount": 8,
 								"computeType": "General"
 							},
-							"traceLevel": "Fine"
+							"traceLevel": "None",
+							"cacheSinks": {}
 						}
 					}
 				],
@@ -469,7 +470,100 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]"
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pipe_copy_lake_tbl_to_dedicated_pool')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_copy_lake_to_dedicated_pool",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "get_lake_table_list",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_copy_lake_to_dedicated_pool",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {
+								"linkedService": {
+									"referenceName": "AzureDataLakeStorage_generaladls2",
+									"type": "LinkedServiceReference"
+								},
+								"folderPath": "copy-row-data"
+							},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "None",
+							"cacheSinks": {
+								"firstRowOnly": true
+							}
+						}
+					},
+					{
+						"name": "get_lake_table_list",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlDWSource",
+								"sqlReaderQuery": "SELECT TABLE_SCHEMA,TABLE_NAME from INFORMATION_SCHEMA.TABLES",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_AzureSynapseAnalytics_lake_db",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_copy_lake_to_dedicated_pool')]",
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]",
+				"[concat(variables('workspaceId'), '/datasets/ds_AzureSynapseAnalytics_lake_db')]"
 			]
 		},
 		{
@@ -607,6 +701,24 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/ds_AzureSynapseAnalytics_lake_db')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedService_synapse_sample_lake_db",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlDWTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/linkedService_synapse_sample_lake_db')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/AzureBlobStorage_TaxiSample')]",
 			"type": "Microsoft.Synapse/workspaces/linkedServices",
 			"apiVersion": "2019-06-01-preview",
@@ -670,6 +782,25 @@
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
 					"connectionString": "[parameters('AzureSql_sample_sql_instance_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/linkedService_synapse_sample_lake_db')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('linkedService_synapse_sample_lake_db_connectionString')]"
 				},
 				"connectVia": {
 					"referenceName": "AutoResolveIntegrationRuntime",
@@ -786,13 +917,6 @@
 								"type": "LinkedServiceReference"
 							},
 							"name": "sourceaescafiles"
-						},
-						{
-							"linkedService": {
-								"referenceName": "AzureDataLakeStorage_generaladls2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourcectrlcafiles"
 						}
 					],
 					"sinks": [
@@ -802,17 +926,29 @@
 								"type": "LinkedServiceReference"
 							},
 							"name": "sinkavrotocsv"
+						},
+						{
+							"name": "sink1tocache"
 						}
 					],
 					"transformations": [
-						{
-							"name": "parse1"
-						},
 						{
 							"name": "flatten1"
 						},
 						{
 							"name": "select1"
+						},
+						{
+							"name": "parse1"
+						},
+						{
+							"name": "parse2"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "split1"
 						}
 					],
 					"scriptLines": [
@@ -831,70 +967,116 @@
 						"     fileSystem: 'row-data',",
 						"     folderPath: 'sample_avro_data',",
 						"     fileName: '46_aes_ca_04042023_1925.avro') ~> sourceaescafiles",
-						"source(output(",
-						"          SequenceNumber as long,",
-						"          Offset as string,",
-						"          EnqueuedTimeUtc as string,",
-						"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
-						"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
-						"          Body as binary",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'avro',",
-						"     fileSystem: 'row-data',",
-						"     wildcardPaths:[(concat(\"/sample_avro_data\", \"/\",\"4*.avro\"))]) ~> sourcectrlcafiles",
-						"sourceaescafiles parse(NewBody = Body ? (Records as (kinesis as (kinesisSchemaVersion as string,",
-						"     partitionKey as string,",
-						"     sequenceNumber as string,",
-						"     data as string,",
-						"     approximateArrivalTimestamp as integer),",
-						"     eventSource as string,",
-						"     eventVersion as string,",
-						"     eventID as string,",
-						"     eventName as string,",
-						"     invokeIdentityArn as string,",
-						"     awsRegion as string,",
-						"     eventSourceARN as string)[])[],",
-						"     format: 'json',",
-						"     documentForm: 'documentPerLine') ~> parse1",
-						"parse1 foldDown(unroll(NewBody.Records),",
+						"parse1 foldDown(unroll(newbody.Records, newbody.Records),",
 						"     mapColumn(",
-						"          eventSource = NewBody.Records.eventSource,",
-						"          eventVersion = NewBody.Records.eventVersion,",
-						"          eventID = NewBody.Records.eventID,",
-						"          eventName = NewBody.Records.eventName,",
-						"          invokeIdentityArn = NewBody.Records.invokeIdentityArn,",
-						"          awsRegion = NewBody.Records.awsRegion,",
-						"          eventSourceARN = NewBody.Records.eventSourceARN,",
-						"          SequenceNumber,",
-						"          kinesispartitionKey = NewBody.Records.kinesis.partitionKey,",
-						"          kinesisSchemaVersion = NewBody.Records.kinesis.kinesisSchemaVersion,",
-						"          kinesissequenceNumber = NewBody.Records.kinesis.sequenceNumber",
+						"          data = newbody.Records.kinesis.data",
 						"     ),",
 						"     skipDuplicateMapInputs: false,",
 						"     skipDuplicateMapOutputs: false) ~> flatten1",
-						"flatten1 select(mapColumn(",
-						"          eventSource,",
-						"          eventVersion,",
-						"          eventID,",
-						"          eventName,",
-						"          invokeIdentityArn,",
-						"          awsRegion,",
-						"          eventSourceARN,",
-						"          SequenceNumber,",
-						"          kinesispartitionKey,",
-						"          kinesisSchemaVersion,",
-						"          kinesissequenceNumber",
+						"parse2 select(mapColumn(",
+						"          Name = data[1].CurrentAgentSnapshot.AgentStatus.Name,",
+						"          StartTimestamp = data[1].CurrentAgentSnapshot.AgentStatus.StartTimestamp,",
+						"          Channel = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.Concurrency[1].Channel",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
+						"sourceaescafiles parse(newbody = Body ? (Records as ",
+						"",
+						"(kinesis as ",
+						"",
+						"(kinesisSchemaVersion as string,",
+						"     partitionKey as string,",
+						"     sequenceNumber as string,",
+						"     data as string,",
+						"     approximateArrivalTimestamp as integer)",
+						"     )[])[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse1",
+						"derivedColumn1 parse(data = data ? (AWSAccountId as string,",
+						"     AgentARN as string,",
+						"     CurrentAgentSnapshot as (AgentStatus as (ARN as string,",
+						"     Name as string,",
+						"     StartTimestamp as string,",
+						"     Type as string),",
+						"     Configuration as (AgentHierarchyGroups as string,",
+						"     AutoAccept as boolean,",
+						"     FirstName as string,",
+						"     LanguageCode as string,",
+						"     LastName as string,",
+						"     ProficiencyList as string ,",
+						"     RoutingProfile as (ARN as string,",
+						"     Concurrency as (AvailableSlots as integer,",
+						"     Channel as string,",
+						"     MaximumSlots as integer)[],",
+						"     DefaultOutboundQueue as (ARN as string,",
+						"     ",
+						"     Name as string),",
+						"     InboundQueues as (ARN as string,",
+						"     ",
+						"     Name as string)[],",
+						"     Name as string),",
+						"     SipAddress as string,",
+						"     Username as string),",
+						"     Contacts as (Channel as string,",
+						"     ConnectedToAgentTimestamp as string,",
+						"     ContactId as string,",
+						"     InitialContactId as string,",
+						"     InitiationMethod as string,",
+						"     Queue as (ARN as string,",
+						"     Name as string),",
+						"     QueueTimestamp as string ,",
+						"     State as string,",
+						"     StateStartTimestamp as string)[],",
+						"     NextAgentStatus as string ),",
+						"     EventId as string,",
+						"     EventTimestamp as string,",
+						"     EventType as string,",
+						"     InstanceARN as string,",
+						"     PreviousAgentSnapshot as (AgentStatus as (ARN as string,",
+						"     Name as string,",
+						"     StartTimestamp as string,",
+						"     Type as string),",
+						"     Configuration as (AgentHierarchyGroups as string,",
+						"     AutoAccept as boolean,",
+						"     FirstName as string,",
+						"     LanguageCode as string,",
+						"     LastName as string,",
+						"     ProficiencyList as string ,",
+						"     RoutingProfile as (ARN as string,",
+						"     Concurrency as (AvailableSlots as integer,",
+						"     Channel as string,",
+						"     MaximumSlots as integer)[],",
+						"     DefaultOutboundQueue as (ARN as string,",
+						"     Name as string),",
+						"     InboundQueues as (ARN as string,",
+						"     ",
+						"     Name as string)[],",
+						"     Name as string),",
+						"     SipAddress as string,",
+						"     Username as string),",
+						"     Contacts as (Channel as string,",
+						"     ConnectedToAgentTimestamp as string,",
+						"     ContactId as string,",
+						"     InitialContactId as string,",
+						"     InitiationMethod as string,",
+						"     Queue as (ARN as string,",
+						"     Name as string),",
+						"     QueueTimestamp as string,",
+						"     State as string,",
+						"     StateStartTimestamp as string)[],",
+						"     NextAgentStatus as string),",
+						"     Version as string)[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse2",
+						"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
+						"select1 split(true(),",
+						"     true(),",
+						"     disjoint: true) ~> split1@(sinkavrotocsv, sink1)",
+						"split1@sinkavrotocsv sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delimited',",
 						"     fileSystem: 'row-data',",
-						"     folderPath: 'sample_avro_data',",
+						"     folderPath: 'sample_csv_data',",
 						"     columnDelimiter: ',',",
 						"     escapeChar: '\\\\',",
 						"     quoteChar: '\\\"',",
@@ -903,7 +1085,15 @@
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkavrotocsv"
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2) ~> sinkavrotocsv",
+						"split1@sink1 sink(validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     store: 'cache',",
+						"     format: 'inline',",
+						"     output: true,",
+						"     saveOrder: 1) ~> sink1tocache"
 					]
 				}
 			},
@@ -1031,6 +1221,58 @@
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]",
 				"[concat(variables('workspaceId'), '/datasets/DelimitedText1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_copy_lake_to_dedicated_pool')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "linkedService_synapse_sample_sales_dw",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     store: 'synapse',",
+						"     databaseType: 'spark',",
+						"     format: 'table',",
+						"     database: 'sample_lake_db',",
+						"     tableName: 'tbl1') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'synapseanalytics',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'tbl1',",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     allowCopyCommand: true,",
+						"     staged: true,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/linkedService_synapse_sample_sales_dw')]"
 			]
 		},
 		{
@@ -3503,189 +3745,6 @@
 			},
 			"dependsOn": [],
 			"location": "canadacentral"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/df_copy_lake_to_dedicated_pool')]",
-			"type": "Microsoft.Synapse/workspaces/dataflows",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"name": "source1"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "linkedService_synapse_sample_sales_dw",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     store: 'synapse',",
-						"     databaseType: 'spark',",
-						"     format: 'table',",
-						"     database: 'sample_lake_db',",
-						"     tableName: 'tbl1') ~> source1",
-						"source1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'synapseanalytics',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'tbl1',",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     deletable: false,",
-						"     upsertable: false,",
-						"     recreate: true,",
-						"     allowCopyCommand: true,",
-						"     staged: true,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/linkedService_synapse_sample_sales_dw')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/pipe_copy_lake_tbl_to_dedicated_pool')]",
-			"type": "Microsoft.Synapse/workspaces/pipelines",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"activities": [
-					{
-						"name": "df_copy_lake_to_dedicated_pool",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "get_lake_table_list",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_copy_lake_to_dedicated_pool",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {
-								"linkedService": {
-									"referenceName": "AzureDataLakeStorage_generaladls2",
-									"type": "LinkedServiceReference"
-								},
-								"folderPath": "copy-row-data"
-							},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "None",
-							"cacheSinks": {
-								"firstRowOnly": true
-							}
-						}
-					},
-					{
-						"name": "get_lake_table_list",
-						"type": "Lookup",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlDWSource",
-								"sqlReaderQuery": "SELECT TABLE_SCHEMA,TABLE_NAME from INFORMATION_SCHEMA.TABLES",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"dataset": {
-								"referenceName": "ds_AzureSynapseAnalytics_lake_db",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"firstRowOnly": false
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]",
-				"[concat(variables('workspaceId'), '/dataflows/df_copy_lake_to_dedicated_pool')]",
-				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]",
-				"[concat(variables('workspaceId'), '/datasets/ds_AzureSynapseAnalytics_lake_db')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/linkedService_synapse_sample_lake_db')]",
-			"type": "Microsoft.Synapse/workspaces/linkedServices",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDW",
-				"typeProperties": {
-					"connectionString": "[parameters('linkedService_synapse_sample_lake_db_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "AutoResolveIntegrationRuntime",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/ds_AzureSynapseAnalytics_lake_db')]",
-			"type": "Microsoft.Synapse/workspaces/datasets",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "linkedService_synapse_sample_lake_db",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlDWTable",
-				"schema": [],
-				"typeProperties": {}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/linkedServices/linkedService_synapse_sample_lake_db')]"
-			]
 		}
 	]
 }

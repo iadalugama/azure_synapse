@@ -107,7 +107,7 @@
 				"     )[])[],",
 				"     format: 'json',",
 				"     documentForm: 'documentPerLine') ~> parse1",
-				"flatten1 parse(data = data,",
+				"flatten1 parse(data = toBase64(data) ? (data as string)[],",
 				"     format: 'json',",
 				"     documentForm: 'documentPerLine') ~> parse2",
 				"select1 sink(allowSchemaDrift: true,",

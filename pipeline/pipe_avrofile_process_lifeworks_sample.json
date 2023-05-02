@@ -42,7 +42,7 @@
 				"typeProperties": {
 					"variableName": "avro_rowread_count",
 					"value": {
-						"value": "@activity('df-process-avro-files').output.runStatus.output.sink1tocache.value.count",
+						"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sinkavrotocsv.rowsWritten)",
 						"type": "Expression"
 					}
 				}
@@ -62,7 +62,7 @@
 				"typeProperties": {
 					"variableName": "sql_rowwritten_count",
 					"value": {
-						"value": "@activity('df-process-avro-files').output.runStatus.metrics.sink1tocache.rowsWritten",
+						"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sink1tocache.rowsWritten)",
 						"type": "Expression"
 					}
 				}

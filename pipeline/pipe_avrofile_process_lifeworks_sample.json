@@ -26,8 +26,62 @@
 					},
 					"traceLevel": "None"
 				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "df-process-avro-files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "avro_rowread_count",
+					"value": {
+						"value": "@activity('df-process-avro-files').output.runStatus.output.sink1tocache.value.count",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set variable2",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "df-process-avro-files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "sql_rowwritten_count",
+					"value": {
+						"value": "@activity('df-process-avro-files').output.runStatus.metrics.sink1tocache.rowsWritten",
+						"type": "Expression"
+					}
+				}
 			}
 		],
+		"variables": {
+			"avro_rowread_arr": {
+				"type": "Array"
+			},
+			"sql_rowwritten_arr": {
+				"type": "Array"
+			},
+			"avro_rowread_count": {
+				"type": "String"
+			},
+			"sql_rowwritten_count": {
+				"type": "String"
+			}
+		},
 		"annotations": []
 	}
 }

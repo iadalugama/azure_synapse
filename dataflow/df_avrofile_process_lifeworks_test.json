@@ -20,9 +20,6 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "sinkavrotocsv"
-				},
-				{
-					"name": "sinkAvroToCache"
 				}
 			],
 			"transformations": [
@@ -40,9 +37,6 @@
 				},
 				{
 					"name": "derivedColumn1"
-				},
-				{
-					"name": "SplitCsvAndCache"
 				}
 			],
 			"scriptLines": [
@@ -69,8 +63,7 @@
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
 				"parse2 select(mapColumn(",
 				"          Name = data[1].CurrentAgentSnapshot.AgentStatus.Name,",
-				"          StartTimestamp = data[1].CurrentAgentSnapshot.AgentStatus.StartTimestamp,",
-				"          Channel = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.Concurrency[1].Channel",
+				"          StartTimestamp = data[1].CurrentAgentSnapshot.AgentStatus.StartTimestamp",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
@@ -163,10 +156,7 @@
 				"     format: 'json',",
 				"     documentForm: 'documentPerLine') ~> parse2",
 				"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
-				"select1 split(true(),",
-				"     true(),",
-				"     disjoint: true) ~> SplitCsvAndCache@(sinkAvroToCsv, sinkAvroToCache)",
-				"SplitCsvAndCache@sinkAvroToCsv sink(allowSchemaDrift: true,",
+				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delimited',",
 				"     fileSystem: 'row-data',",
@@ -180,14 +170,7 @@
 				"     postCommands: [],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     saveOrder: 2) ~> sinkavrotocsv",
-				"SplitCsvAndCache@sinkAvroToCache sink(validateSchema: false,",
-				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true,",
-				"     store: 'cache',",
-				"     format: 'inline',",
-				"     output: true,",
-				"     saveOrder: 1) ~> sinkAvroToCache"
+				"     saveOrder: 1) ~> sinkavrotocsv"
 			]
 		}
 	}

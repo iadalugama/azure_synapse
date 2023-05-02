@@ -40,11 +40,38 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"variableName": "avro_rowread_count",
+					"variableName": "csv_rowwritten_count",
 					"value": {
 						"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sinkavrotocsv.rowsWritten)",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Set variable Avro file row written to csv",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@variables('csv_rowwritten_count')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": []
+						}
+					]
 				}
 			}
 		],
@@ -52,13 +79,13 @@
 			"avro_rowread_arr": {
 				"type": "Array"
 			},
-			"sql_rowwritten_arr": {
+			"csv_rowwritten_arr": {
 				"type": "Array"
 			},
 			"avro_rowread_count": {
 				"type": "String"
 			},
-			"sql_rowwritten_count": {
+			"csv_rowwritten_count": {
 				"type": "String"
 			}
 		},

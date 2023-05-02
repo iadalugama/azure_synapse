@@ -63,15 +63,7 @@
 					"expression": {
 						"value": "@variables('csv_rowwritten_count')",
 						"type": "Expression"
-					},
-					"ifTrueActivities": [
-						{
-							"name": "Set variable1",
-							"type": "SetVariable",
-							"dependsOn": [],
-							"userProperties": []
-						}
-					]
+					}
 				}
 			}
 		],

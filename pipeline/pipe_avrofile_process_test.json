@@ -61,9 +61,36 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@variables('csv_rowwritten_count')",
+						"value": "@greater(variables('csv_rowwritten_count'),0)",
 						"type": "Expression"
-					}
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "rowcopiedthan0",
+								"value": "'row copied less than or = 0'"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "rowcopiedthan0",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "rowcopiedthan0",
+								"value": {
+									"value": "'copy actvity copied rows than 0'",
+									"type": "Expression"
+								}
+							}
+						}
+					]
 				}
 			}
 		],
@@ -78,6 +105,9 @@
 				"type": "String"
 			},
 			"csv_rowwritten_count": {
+				"type": "String"
+			},
+			"rowcopiedthan0": {
 				"type": "String"
 			}
 		},

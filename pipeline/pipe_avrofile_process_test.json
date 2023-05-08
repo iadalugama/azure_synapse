@@ -56,12 +56,6 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
-					},
-					{
-						"activity": "Lookup1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
 					}
 				],
 				"userProperties": [],
@@ -94,36 +88,12 @@
 							"typeProperties": {
 								"variableName": "rowcopiedthan0",
 								"value": {
-									"value": "@concat('copy actvity copied rows than 0',\nactivity('df-process-avro-files').Error.Message\n)",
+									"value": "@concat('copy actvity copied rows than 0 error message is',\nactivity('df-process-avro-files').Error.Message\n)",
 									"type": "Expression"
 								}
 							}
 						}
 					]
-				}
-			},
-			{
-				"name": "Lookup1",
-				"type": "Lookup",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"source": {
-						"type": "SqlDWSource",
-						"queryTimeout": "02:00:00",
-						"partitionOption": "None"
-					},
-					"dataset": {
-						"referenceName": "ds_AzureSynapseAnalytics_lake_db",
-						"type": "DatasetReference"
-					}
 				}
 			}
 		],

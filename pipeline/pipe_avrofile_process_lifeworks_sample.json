@@ -18,7 +18,13 @@
 				"typeProperties": {
 					"dataflow": {
 						"referenceName": "df_avrofile_process_lifeworks_sample",
-						"type": "DataFlowReference"
+						"type": "DataFlowReference",
+						"parameters": {
+							"source_path": {
+								"value": "'@{concat('row-data/sample_avro_data'    \n    ,formatDateTime(addMinutes(utcNow(),-10),'yyyy/MM/dd/HH/mm'))}'",
+								"type": "Expression"
+							}
+						}
 					},
 					"compute": {
 						"coreCount": 8,

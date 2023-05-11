@@ -76,6 +76,9 @@
 				]
 			}
 		],
+		"folder": {
+			"name": "sample-copy-activites"
+		},
 		"annotations": []
 	}
 }

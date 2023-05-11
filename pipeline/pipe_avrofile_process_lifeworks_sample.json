@@ -68,6 +68,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "lifeworks"
+		},
 		"annotations": []
 	}
 }

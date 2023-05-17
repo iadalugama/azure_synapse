@@ -534,8 +534,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]"
 			]
 		},
 		{
@@ -673,8 +672,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_test')]",
-				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_test')]"
 			]
 		},
 		{
@@ -1131,6 +1129,36 @@
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/pipelines/pipe_avrofile_process_lifeworks_sample')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/trg_storage_event')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pipe_avrofile_process_test",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trg_storage_event_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/pipe_avrofile_process_test')]"
 			]
 		},
 		{
@@ -4251,36 +4279,6 @@
 			},
 			"dependsOn": [],
 			"location": "canadacentral"
-		},
-		{
-			"name": "[concat(parameters('workspaceName'), '/trg_storage_event')]",
-			"type": "Microsoft.Synapse/workspaces/triggers",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"annotations": [],
-				"runtimeState": "Started",
-				"pipelines": [
-					{
-						"pipelineReference": {
-							"referenceName": "pipe_avrofile_process_test",
-							"type": "PipelineReference"
-						},
-						"parameters": {}
-					}
-				],
-				"type": "BlobEventsTrigger",
-				"typeProperties": {
-					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
-					"ignoreEmptyBlobs": true,
-					"scope": "[parameters('trg_storage_event_properties_typeProperties_scope')]",
-					"events": [
-						"Microsoft.Storage.BlobCreated"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('workspaceId'), '/pipelines/pipe_avrofile_process_test')]"
-			]
 		}
 	]
 }

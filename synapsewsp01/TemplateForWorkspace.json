@@ -560,7 +560,12 @@
 							"dataflow": {
 								"referenceName": "df_avrofile_process_lifeworks_test",
 								"type": "DataFlowReference",
-								"parameters": {},
+								"parameters": {
+									"source_path": {
+										"value": "'@{concat('row-data/sample_avro_data'    \n    ,formatDateTime(addMinutes(utcNow(),-10),'yyyy/MM/dd/HH/mm'))}'",
+										"type": "Expression"
+									}
+								},
 								"datasetParameters": {
 									"sourceaescafiles": {},
 									"sinkavrotocsv": {}
@@ -1464,6 +1469,9 @@
 						}
 					],
 					"scriptLines": [
+						"parameters{",
+						"     source_path as string ('none')",
+						"}",
 						"source(output(",
 						"          SequenceNumber as long,",
 						"          Offset as string,",

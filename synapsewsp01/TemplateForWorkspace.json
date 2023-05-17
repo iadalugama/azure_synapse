@@ -28,6 +28,10 @@
 			"metadata": "Secure string for 'connectionString' of 'synapsewsp01-WorkspaceDefaultSqlServer'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsewsp01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"tempjsonconnector_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'tempjsonconnector'"
+		},
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"type": "secureString",
 			"metadata": "Secure string for 'sasUri' of 'AzureBlobStorage_TaxiSample'"
@@ -43,6 +47,18 @@
 		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://synapsews01adls2.dfs.core.windows.net"
+		},
+		"tempjsonconnector_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://generaladls2.dfs.core.windows.net/"
+		},
+		"Trigger 1_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
+		},
+		"trg_storage_event_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
 		}
 	},
 	"variables": {
@@ -134,6 +150,9 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "sample-copy-activites"
 				},
 				"annotations": []
 			},
@@ -369,6 +388,9 @@
 						"defaultValue": "Pause"
 					}
 				},
+				"folder": {
+					"name": "utility"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -446,11 +468,16 @@
 							"dataflow": {
 								"referenceName": "df_avrofile_process_lifeworks_sample",
 								"type": "DataFlowReference",
-								"parameters": {},
+								"parameters": {
+									"source_path": {
+										"value": "'@{concat('row-data/sample_avro_data'    \n    ,formatDateTime(addMinutes(utcNow(),-10),'yyyy/MM/dd/HH/mm'))}'",
+										"type": "Expression"
+									}
+								},
 								"datasetParameters": {
 									"sourceaescafiles": {},
 									"sinkavrotocsv": {},
-									"sink1tocache": {}
+									"sinkAvroToCache": {}
 								}
 							},
 							"staging": {},
@@ -461,16 +488,192 @@
 							"traceLevel": "None",
 							"cacheSinks": {}
 						}
+					},
+					{
+						"name": "Set variable Avro file row written to csv",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "df-process-avro-files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "avro_rowread_count",
+							"value": {
+								"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sinkavrotocsv.rowsWritten)",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"variables": {
+					"avro_rowread_arr": {
+						"type": "Array"
+					},
+					"sql_rowwritten_arr": {
+						"type": "Array"
+					},
+					"avro_rowread_count": {
+						"type": "String"
+					},
+					"sql_rowwritten_count": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "lifeworks"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_sample')]",
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/pipe_avrofile_process_test')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "https://github.com/balakreshnan/Samples2021/blob/main/ADF/avroprocessdf.md",
+				"activities": [
+					{
+						"name": "df-process-avro-files",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_avrofile_process_lifeworks_test",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceaescafiles": {},
+									"sinkavrotocsv": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "None",
+							"cacheSinks": {}
+						}
+					},
+					{
+						"name": "Set variable Avro file row written to csv",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "df-process-avro-files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "csv_rowwritten_count",
+							"value": {
+								"value": "@string(activity('df-process-avro-files').output.runStatus.metrics.sinkavrotocsv.rowsWritten)",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "If Condition1",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "Set variable Avro file row written to csv",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@greater(int(variables('csv_rowwritten_count')),0)",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "rowcopiedthan0",
+										"value": {
+											"value": "@concat('row copied less than=0',\nactivity('df-process-avro-files').Error.Message\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "rowcopiedthan0",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "rowcopiedthan0",
+										"value": {
+											"value": "@concat('copy actvity copied rows than 0 error message is',\nactivity('df-process-avro-files').Error.Message\n)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"avro_rowread_arr": {
+						"type": "Array"
+					},
+					"csv_rowwritten_arr": {
+						"type": "Array"
+					},
+					"avro_rowread_count": {
+						"type": "String"
+					},
+					"csv_rowwritten_count": {
+						"type": "String"
+					},
+					"rowcopiedthan0": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "lifeworks"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/dataflows/df_avrofile_process_lifeworks_test')]",
 				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
 			]
 		},
@@ -557,6 +760,9 @@
 				"policy": {
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
+				},
+				"folder": {
+					"name": "sample-copy-activites"
 				},
 				"annotations": []
 			},
@@ -874,6 +1080,60 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/tempjsonconnector')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('tempjsonconnector_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('tempjsonconnector_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Trigger 1')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pipe_avrofile_process_lifeworks_sample",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
+					"blobPathEndsWith": "22.avro",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('Trigger 1_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/pipe_avrofile_process_lifeworks_sample')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
 			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
 			"apiVersion": "2019-06-01-preview",
@@ -887,6 +1147,36 @@
 							"coreCount": 8,
 							"timeToLive": 0
 						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/IR-SSIS')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "Canada Central",
+						"nodeSize": "Standard_D8_v3",
+						"numberOfNodes": 1,
+						"maxParallelExecutionsPerNode": 8
+					},
+					"ssisProperties": {
+						"catalogInfo": {
+							"catalogServerEndpoint": "sample-sql-instance.database.windows.net",
+							"catalogAdminUserName": "saadmin",
+							"catalogAdminPassword": {
+								"type": "SecureString",
+								"value": "**********"
+							},
+							"catalogPricingTier": "S1"
+						},
+						"edition": "Standard",
+						"licenseType": "BasePrice"
 					}
 				}
 			},
@@ -928,7 +1218,7 @@
 							"name": "sinkavrotocsv"
 						},
 						{
-							"name": "sink1tocache"
+							"name": "sinkAvroToCache"
 						}
 					],
 					"transformations": [
@@ -948,10 +1238,13 @@
 							"name": "derivedColumn1"
 						},
 						{
-							"name": "split1"
+							"name": "SplitCsvAndCache"
 						}
 					],
 					"scriptLines": [
+						"parameters{",
+						"     source_path as string ('none')",
+						"}",
 						"source(output(",
 						"          SequenceNumber as long,",
 						"          Offset as string,",
@@ -974,9 +1267,7 @@
 						"     skipDuplicateMapInputs: false,",
 						"     skipDuplicateMapOutputs: false) ~> flatten1",
 						"parse2 select(mapColumn(",
-						"          Name = data[1].CurrentAgentSnapshot.AgentStatus.Name,",
-						"          StartTimestamp = data[1].CurrentAgentSnapshot.AgentStatus.StartTimestamp,",
-						"          Channel = data[1].CurrentAgentSnapshot.Configuration.RoutingProfile.Concurrency[1].Channel",
+						"          data",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
@@ -1071,8 +1362,8 @@
 						"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
 						"select1 split(true(),",
 						"     true(),",
-						"     disjoint: true) ~> split1@(sinkavrotocsv, sink1)",
-						"split1@sinkavrotocsv sink(allowSchemaDrift: true,",
+						"     disjoint: true) ~> SplitCsvAndCache@(sinkAvroToCsv, sinkAvroToCache)",
+						"SplitCsvAndCache@sinkAvroToCsv sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'delimited',",
 						"     fileSystem: 'row-data',",
@@ -1087,13 +1378,228 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     saveOrder: 2) ~> sinkavrotocsv",
-						"split1@sink1 sink(validateSchema: false,",
+						"SplitCsvAndCache@sinkAvroToCache sink(validateSchema: false,",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     store: 'cache',",
 						"     format: 'inline',",
 						"     output: true,",
-						"     saveOrder: 1) ~> sink1tocache"
+						"     saveOrder: 1) ~> sinkAvroToCache"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureDataLakeStorage_generaladls2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/df_avrofile_process_lifeworks_test')]",
+			"type": "Microsoft.Synapse/workspaces/dataflows",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"description": "\n\nwildcard pattern -- \n\n41_ctr_ca_04042023_*",
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceaescafiles"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage_generaladls2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkavrotocsv"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flatten1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "parse1"
+						},
+						{
+							"name": "parse2"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          SequenceNumber as long,",
+						"          Offset as string,",
+						"          EnqueuedTimeUtc as string,",
+						"          SystemProperties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Properties as [string,(member0 as long, member1 as double, member2 as string, member3 as binary)],",
+						"          Body as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'avro',",
+						"     fileSystem: 'row-data',",
+						"     folderPath: 'sample_avro_data',",
+						"     fileName: '46_aes_ca_04042023_1925.avro') ~> sourceaescafiles",
+						"parse1 foldDown(unroll(newbody.Records, newbody.Records),",
+						"     mapColumn(",
+						"          data = newbody.Records.kinesis.data",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flatten1",
+						"parse2 select(mapColumn(",
+						"          AWSAccountId = data[1].AWSAccountId",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"sourceaescafiles parse(newbody = Body ? (Records as ",
+						"",
+						"(kinesis as ",
+						"",
+						"(kinesisSchemaVersion as string,",
+						"     partitionKey as string,",
+						"     sequenceNumber as string,",
+						"     data as string,",
+						"     approximateArrivalTimestamp as integer)",
+						"     )[])[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse1",
+						"derivedColumn1 parse(data = data ? (AWSAccountId as string,",
+						"    AgentARN as string,",
+						"    CurrentAgentSnapshot as (AgentStatus as (ARN as string,Name as string,StartTimestamp as string,Type as string),",
+						"    Configuration as (AgentHierarchyGroups as (Level1 as (ARN as string,Name as string),",
+						"    Level2 as (ARN as string,",
+						"    Name as string),",
+						"    Level3 as (ARN as string,",
+						"    Name as string),",
+						"    Level4 as (ARN as string,",
+						"    Name as string),",
+						"    Level5 as (ARN as string,",
+						"    Name as string)),",
+						"    AutoAccept as boolean,",
+						"    FirstName as string,",
+						"    LanguageCode as string,",
+						"    LastName as string,",
+						"    ProficiencyList as string,",
+						"    RoutingProfile as (ARN as string,",
+						"    Concurrency as (AvailableSlots as integer,",
+						"    Channel as string,",
+						"    MaximumSlots as integer)[],",
+						"    DefaultOutboundQueue as (ARN as string,",
+						"    Channels as (dd as string,",
+						"    ee as string,",
+						"    rr as string,",
+						"    tt as string,",
+						"    yy as string)[],",
+						"    Name as string),",
+						"    InboundQueues as (ARN as string,",
+						"    Channels as (dd as string,",
+						"    ee as string,",
+						"    rr as string,",
+						"    tt as string,",
+						"    yy as string)[],",
+						"    Name as string)[],",
+						"    Name as string),",
+						"    SipAddress as string,",
+						"    Username as string),",
+						"    Contacts as (Channel as string,",
+						"    ConnectedToAgentTimestamp as string,",
+						"    ContactId as string,",
+						"    InitialContactId as string,",
+						"    InitiationMethod as string,",
+						"    Queue as (ARN as string,",
+						"    Name as string",
+						"    ),",
+						"    QueueTimestamp as string,",
+						"    State as string,",
+						"    StateStartTimestamp as string",
+						"    )[],",
+						"    NextAgentStatus as string),",
+						"    EventId as string,",
+						"    EventTimestamp as string,",
+						"    EventType as string,",
+						"    InstanceARN as string,",
+						"    PreviousAgentSnapshot as (AgentStatus as (ARN as string,",
+						"    Name as string,",
+						"    StartTimestamp as string,",
+						"    Type as string),",
+						"    Configuration as (AgentHierarchyGroups as (Level1 as (ARN as string,",
+						"    Name as string),",
+						"    Level2 as (ARN as string,",
+						"    Name as string),",
+						"    Level3 as (ARN as string,",
+						"    Name as string),",
+						"    Level4 as (ARN as string,",
+						"    Name as string),",
+						"    Level5 as (ARN as string,",
+						"    Name as string) ),",
+						"    AutoAccept as boolean,",
+						"    FirstName as string,",
+						"    LanguageCode as string,",
+						"    LastName as string,",
+						"    ProficiencyList as string,",
+						"    RoutingProfile as (ARN as string,",
+						"    Concurrency as (AvailableSlots as integer,",
+						"    Channel as string,",
+						"    MaximumSlots as integer)[],",
+						"    DefaultOutboundQueue as (ARN as string,",
+						"   Channels as (dd as string,",
+						"    ee as string,",
+						"    rr as string,",
+						"    tt as string,",
+						"    yy as string)[],",
+						"    Name as string),",
+						"    InboundQueues as (ARN as string,",
+						"    Channels as (dd as string,",
+						"    ee as string,",
+						"    rr as string,",
+						"    tt as string,",
+						"    yy as string)[],",
+						"    Name as string)[],",
+						"    Name as string),",
+						"    SipAddress as string,",
+						"    Username as string),",
+						"    Contacts as (Channel as string,",
+						"    ConnectedToAgentTimestamp as string,",
+						"    ContactId as string,",
+						"    InitialContactId as string,",
+						"    InitiationMethod as string,",
+						"    Queue as (ARN as string,",
+						"    Name as string),",
+						"    QueueTimestamp as string,",
+						"    State as string,",
+						"    StateStartTimestamp as string",
+						"    )[],",
+						"    NextAgentStatus as string),",
+						"    Version as string)[],",
+						"     format: 'json',",
+						"     documentForm: 'documentPerLine') ~> parse2",
+						"flatten1 derive(data = fromBase64(data)) ~> derivedColumn1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'row-data',",
+						"     folderPath: 'sample_csv_data',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1) ~> sinkavrotocsv"
 					]
 				}
 			},
@@ -3745,6 +4251,36 @@
 			},
 			"dependsOn": [],
 			"location": "canadacentral"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/trg_storage_event')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pipe_avrofile_process_test",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trg_storage_event_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/pipe_avrofile_process_test')]"
+			]
 		}
 	]
 }

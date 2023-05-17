@@ -20,6 +20,9 @@
 		"synapsewsp01-WorkspaceDefaultSqlServer_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapsewsp01.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
 		},
+		"tempjsonconnector_accountKey": {
+			"value": ""
+		},
 		"AzureBlobStorage_TaxiSample_sasUri": {
 			"value": ""
 		},
@@ -31,6 +34,15 @@
 		},
 		"synapsewsp01-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://synapsews01adls2.dfs.core.windows.net"
+		},
+		"tempjsonconnector_properties_typeProperties_url": {
+			"value": "https://generaladls2.dfs.core.windows.net/"
+		},
+		"Trigger 1_properties_typeProperties_scope": {
+			"value": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
+		},
+		"trg_storage_event_properties_typeProperties_scope": {
+			"value": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
 		}
 	}
 }

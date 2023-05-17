@@ -61,7 +61,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"expression": {
-						"value": "@greater(variables('csv_rowwritten_count'),0)",
+						"value": "@greater(int(variables('csv_rowwritten_count')),0)",
 						"type": "Expression"
 					},
 					"ifFalseActivities": [

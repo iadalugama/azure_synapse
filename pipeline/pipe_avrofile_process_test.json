@@ -103,6 +103,12 @@
 				}
 			}
 		],
+		"parameters": {
+			"pipe_src_path": {
+				"type": "string",
+				"defaultValue": "'asfas'"
+			}
+		},
 		"variables": {
 			"avro_rowread_arr": {
 				"type": "Array"

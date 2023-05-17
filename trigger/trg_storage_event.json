@@ -1,0 +1,24 @@
+{
+	"name": "trg_storage_event",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pipe_avrofile_process_test",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}

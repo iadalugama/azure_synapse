@@ -106,7 +106,7 @@
 		"parameters": {
 			"pipe_src_path": {
 				"type": "string",
-				"defaultValue": "'asfas'"
+				"defaultValue": "'nnn'"
 			}
 		},
 		"variables": {

@@ -40,6 +40,9 @@
 				}
 			],
 			"scriptLines": [
+				"parameters{",
+				"     source_path as string ('none')",
+				"}",
 				"source(output(",
 				"          SequenceNumber as long,",
 				"          Offset as string,",

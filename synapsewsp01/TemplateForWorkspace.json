@@ -1167,7 +1167,6 @@
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
 					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
-					"blobPathEndsWith": "*.avro",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('trg_storage_event_properties_typeProperties_scope')]",
 					"events": [

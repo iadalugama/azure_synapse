@@ -8,6 +8,9 @@
 				"pipelineReference": {
 					"referenceName": "pipe_avrofile_process_test",
 					"type": "PipelineReference"
+				},
+				"parameters": {
+					"pipe_src_path": "@triggerBody().folderPath"
 				}
 			}
 		],

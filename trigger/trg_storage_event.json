@@ -17,7 +17,6 @@
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
 			"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
-			"blobPathEndsWith": "*.avro",
 			"ignoreEmptyBlobs": true,
 			"scope": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2",
 			"events": [

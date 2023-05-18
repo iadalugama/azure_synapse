@@ -56,6 +56,10 @@
 			"type": "string",
 			"defaultValue": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
 		},
+		"trg_storage_event_properties_pipe_avrofile_process_test_parameters_pipe_src_path": {
+			"type": "string",
+			"defaultValue": "@triggerBody().folderPath"
+		},
 		"trg_storage_event_properties_typeProperties_scope": {
 			"type": "string",
 			"defaultValue": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-storages-adlsgen2/providers/Microsoft.Storage/storageAccounts/generaladls2"
@@ -1155,12 +1159,15 @@
 							"referenceName": "pipe_avrofile_process_test",
 							"type": "PipelineReference"
 						},
-						"parameters": {}
+						"parameters": {
+							"pipe_src_path": "[parameters('trg_storage_event_properties_pipe_avrofile_process_test_parameters_pipe_src_path')]"
+						}
 					}
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
 					"blobPathBeginsWith": "/row-data/blobs/sample_avro_data/",
+					"blobPathEndsWith": "*.avro",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('trg_storage_event_properties_typeProperties_scope')]",
 					"events": [
@@ -4258,18 +4265,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/sample__sales_dw')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "canadacentral"
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/SampleSpark')]",
 			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
@@ -4289,6 +4284,18 @@
 				"sparkVersion": "3.2",
 				"isComputeIsolationEnabled": false,
 				"sessionLevelPackagesEnabled": false,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "canadacentral"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/sample__sales_dw')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
 				"annotations": []
 			},
 			"dependsOn": [],

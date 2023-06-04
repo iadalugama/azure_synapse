@@ -20,7 +20,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "1dd94e64-a35e-42b3-ac7a-5bebd1260856"
+				"spark.autotune.trackingId": "054fbb8f-4a6f-4005-b5f0-a5c96019f4ed"
 			}
 		},
 		"metadata": {
@@ -83,7 +83,7 @@
 					"from openai.embeddings_utils import get_embedding, cosine_similarity\r\n",
 					"from transformers import GPT2TokenizerFast"
 				],
-				"execution_count": 9
+				"execution_count": 3
 			},
 			{
 				"cell_type": "code",
@@ -109,13 +109,13 @@
 					"openai.api_version = \"2022-12-01\"\r\n",
 					"\r\n",
 					"#url = openai.api_base + \"/openai/deployments?api-version=2022-12-01\"\r\n",
-					"url = \"https://test-textsummary.openai.azure.com/openai/deployments?api-version=2022-12-01\"\r\n",
+					"url = \"https://test-textsummary.openai.azure.com/openai/deployments/test-textsummary/completions?api-version=2022-12-01\"\r\n",
 					"\r\n",
 					"r = requests.get(url, headers={\"api-key\": API_KEY})\r\n",
 					"\r\n",
 					"print(r.text)"
 				],
-				"execution_count": 16
+				"execution_count": 2
 			}
 		]
 	}

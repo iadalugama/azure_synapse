@@ -1,5 +1,5 @@
 {
-	"name": "csv_validation_v2",
+	"name": "csv_validation_pyspark",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b0315d2b-9621-4237-bebc-fe4525e42070"
+				"spark.autotune.trackingId": "3b83670c-7e0c-42ae-8e59-a92e2267e682"
 			}
 		},
 		"metadata": {
@@ -104,7 +104,7 @@
 					"\r\n",
 					"df2 = df.withColumn(\"badRecord\", f.when(f.to_date(f.col(\"Case Open Date\"),\"dd/MM/yyyy\").isNotNull, False).otherwise(True))"
 				],
-				"execution_count": 19
+				"execution_count": 26
 			},
 			{
 				"cell_type": "code",
@@ -120,6 +120,8 @@
 					}
 				},
 				"source": [
+					"import pyspark\r\n",
+					"from pyspark.sql import SparkSession\r\n",
 					"from pyspark.sql.types import StructType,StructField, StringType, IntegerType\r\n",
 					"\r\n",
 					"schema = StructType([ \\\r\n",
@@ -149,7 +151,7 @@
 					"                )\r\n",
 					"df.show(truncate=False)"
 				],
-				"execution_count": 23
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -193,7 +195,7 @@
 					"df.printSchema()\r\n",
 					"df.show(truncate=False)"
 				],
-				"execution_count": null
+				"execution_count": 24
 			}
 		]
 	}

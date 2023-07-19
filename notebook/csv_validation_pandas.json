@@ -1,5 +1,5 @@
 {
-	"name": "csv_validation",
+	"name": "csv_validation_pandas",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "59533c7e-de0e-4d5e-885b-872440f82bef"
+				"spark.autotune.trackingId": "1dcda2ec-4a27-4aba-8e8a-0d2865202c73"
 			}
 		},
 		"metadata": {
@@ -52,14 +52,12 @@
 				"cell_type": "code",
 				"source": [
 					"import pandas as pd\r\n",
-					"\r\n",
 					"#read csv file\r\n",
 					"df = pd.read_csv('abfss://row-data@generaladls2.dfs.core.windows.net/sample_csv_data/CCS_2023.01 Global Partner Reportingv2.csv')\r\n",
-					"df = df.head(2)\r\n",
-					"print(df)\r\n",
-					""
+					"df = df.head(10)\r\n",
+					"print(df)"
 				],
-				"execution_count": 7
+				"execution_count": 36
 			},
 			{
 				"cell_type": "code",
@@ -80,6 +78,56 @@
 					"print(df.describe())"
 				],
 				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"pip install  pandas_schema"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# https://safjan.com/pandas-schema-validation/\r\n",
+					"\r\n",
+					"from pandas_schema import Column, Schema\r\n",
+					"\r\n",
+					"from pandas_schema.validation import LeadingWhitespaceValidation, TrailingWhitespaceValidation, IsDtypeValidation, InListValidation\r\n",
+					"\r\n",
+					"schema = Schema([\r\n",
+					"    Column('Case Open Date', [LeadingWhitespaceValidation(), TrailingWhitespaceValidation()]),\r\n",
+					"    Column('Org ID', [IsDtypeValidation(int), InListValidation(range(1079738, 1007182))]),\r\n",
+					"    Column('gender', [InListValidation(['male', 'female'])])\r\n",
+					"])\r\n",
+					"\r\n",
+					"errors = schema.validate(df)\r\n",
+					"\r\n",
+					"print(errors)"
+				],
+				"execution_count": 34
 			}
 		]
 	}

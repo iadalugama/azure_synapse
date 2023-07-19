@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "3b83670c-7e0c-42ae-8e59-a92e2267e682"
+				"spark.autotune.trackingId": "77d5503b-4450-477d-9049-135f4e6a338e"
 			}
 		},
 		"metadata": {
@@ -62,9 +62,10 @@
 					"## If header exists uncomment line below\r\n",
 					", header=True\r\n",
 					")\r\n",
+					"\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 14
+				"execution_count": 38
 			},
 			{
 				"cell_type": "code",
@@ -80,11 +81,39 @@
 					}
 				},
 				"source": [
+					"import pyspark\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import StructType,StructField, StringType, IntegerType\r\n",
+					"\r\n",
 					"df.printSchema()\r\n",
 					"print(df.schema[\"Case Open Date\"].dataType)\r\n",
-					""
+					"\r\n",
+					"schema = StructType([ \\\r\n",
+					"    StructField(\"Case Open Date\",StringType(),True), \\\r\n",
+					"    StructField(\"Source Case Id\",StringType(),True), \\\r\n",
+					"    StructField(\"Org ID\",StringType(),True), \\\r\n",
+					"    StructField(\"Country\", StringType(), True), \\\r\n",
+					"    StructField(\"Modality\", StringType(), True), \\\r\n",
+					"    StructField(\"Client Category\",StringType(), True) \\\r\n",
+					"    StructField(\"Gender\",StringType(),True), \\\r\n",
+					"    StructField(\"Date of Birth\",StringType(),True), \\\r\n",
+					"    StructField(\"Source of Information\",StringType(),True), \\\r\n",
+					"    StructField(\"Service\", StringType(), True), \\\r\n",
+					"    StructField(\"Presenting Issue Category\", StringType(), True), \\\r\n",
+					"    StructField(\"Presenting Sub-issue\", StringType(), True), \\\r\n",
+					"    StructField(\"Business Unit\", StringType(), True), \\\r\n",
+					"    StructField(\"Years of Service\", StringType(), True), \\\r\n",
+					"    StructField(\"Job Band\", StringType(), True), \\\r\n",
+					"    StructField(\"HR Business\", StringType(), True), \\\r\n",
+					"    StructField(\"Referral Source\", StringType(), True), \\\r\n",
+					"    StructField(\"Client Status\", StringType(), True), \\\r\n",
+					"    StructField(\"COVID-19\", StringType(), True), \\\r\n",
+					"    StructField(\"# Sessions Provided\", StringType(), True), \\\r\n",
+					"    StructField(\"Session Date(s)\", StringType(), True), \\\r\n",
+					"    StructField(\"Case Status\", StringType(), True), \\\r\n",
+					"  ])"
 				],
-				"execution_count": 16
+				"execution_count": 45
 			},
 			{
 				"cell_type": "code",
@@ -151,7 +180,7 @@
 					"                )\r\n",
 					"df.show(truncate=False)"
 				],
-				"execution_count": 25
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",

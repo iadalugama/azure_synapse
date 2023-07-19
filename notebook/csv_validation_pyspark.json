@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "77d5503b-4450-477d-9049-135f4e6a338e"
+				"spark.autotune.trackingId": "b4a21a83-d5a0-420a-ace5-127776f3236d"
 			}
 		},
 		"metadata": {
@@ -113,7 +113,7 @@
 					"    StructField(\"Case Status\", StringType(), True), \\\r\n",
 					"  ])"
 				],
-				"execution_count": 45
+				"execution_count": 47
 			},
 			{
 				"cell_type": "code",

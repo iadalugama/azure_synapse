@@ -1,0 +1,253 @@
+{
+	"name": "csv_validation_pyspark_v2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "SampleSpark",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "b5bf6f21-d6e9-43e2-922a-831baeeeca9e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/3c321efc-9b78-45cd-ab39-1378151cbd42/resourceGroups/test-synapse-analytics/providers/Microsoft.Synapse/workspaces/synapsewsp01/bigDataPools/SampleSpark",
+				"name": "SampleSpark",
+				"type": "Spark",
+				"endpoint": "https://synapsewsp01.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/SampleSpark",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 8,
+				"memory": 56,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"collapsed": false
+				},
+				"source": [
+					"import pyspark\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import StructType,StructField, StringType, IntegerType\r\n",
+					"\r\n",
+					"# df.printSchema()\r\n",
+					"# print(df.schema[\"Case Open Date\"].dataType)\r\n",
+					"\r\n",
+					"csv_schema = StructType([ \\\r\n",
+					"    StructField(\"Case Open Date\",StringType(),True), \\\r\n",
+					"    StructField(\"Source Case Id\",IntegerType(),True), \\\r\n",
+					"    StructField(\"Org ID\",StringType(),True), \\\r\n",
+					"    StructField(\"Country\", StringType(), True), \\\r\n",
+					"    StructField(\"Modality\", StringType(), True), \\\r\n",
+					"    StructField(\"Client Category\", StringType(), True), \\\r\n",
+					"    StructField(\"Gender\",StringType(),True), \\\r\n",
+					"    StructField(\"Date of Birth\",StringType(),True), \\\r\n",
+					"    StructField(\"Source of Information\",StringType(),True), \\\r\n",
+					"    StructField(\"Service\", StringType(), True), \\\r\n",
+					"    StructField(\"Presenting Issue Category\", StringType(), True), \\\r\n",
+					"    StructField(\"Presenting Sub-issue\", StringType(), True), \\\r\n",
+					"    StructField(\"Business Unit\", StringType(), True), \\\r\n",
+					"    StructField(\"Years of Service\", StringType(), True), \\\r\n",
+					"    StructField(\"Job Band\", StringType(), True), \\\r\n",
+					"    StructField(\"HR Business\", StringType(), True), \\\r\n",
+					"    StructField(\"Referral Source\", StringType(), True), \\\r\n",
+					"    StructField(\"Client Status\", StringType(), True), \\\r\n",
+					"    StructField(\"COVID-19\", StringType(), True), \\\r\n",
+					"    StructField(\"# Sessions Provided\", StringType(), True), \\\r\n",
+					"    StructField(\"Session Date(s)\", StringType(), True), \\\r\n",
+					"    StructField(\"Case Status\", StringType(), True), \\\r\n",
+					"    StructField(\"corrept_records\", StringType(), True) \\\r\n",
+					"  ])"
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "python"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%pyspark\r\n",
+					"df = spark.read.load('abfss://row-data@generaladls2.dfs.core.windows.net/sample_csv_data/CCS_2023.01 Global Partner Reportingv2.csv', format='csv'\r\n",
+					",mode=\"PERMISSIVE\",schema= csv_schema,columnNameOfCorruptRecord = 'corrept_records'\r\n",
+					", header=True\r\n",
+					")\r\n",
+					"display(df.limit(10))"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"execution_count": 18
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import functions as f\r\n",
+					"\r\n",
+					"#df.withColumn(\"badRecord\", f.when(f.to_date(f.col(\"Case Open Date\"),\"dd/MM/yyyy\").isNotNull, False).otherwise(True))\r\n",
+					"\r\n",
+					"df.withColumn(\"badRecord\", f.when(col(\"Case Open Date\").isNotNull, False).otherwise(True))\r\n",
+					""
+				],
+				"execution_count": 32
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pyspark\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import StructType,StructField, StringType, IntegerType\r\n",
+					"\r\n",
+					"schema = StructType([ \\\r\n",
+					"    StructField(\"date\",StringType(),True), \\\r\n",
+					"    StructField(\"active\", StringType(), True)\r\n",
+					"    ])\r\n",
+					"\r\n",
+					"input_data = [\r\n",
+					"    (\"27/10/00\",'Y'),\r\n",
+					"    (\"27/10/01\",'Y'),\r\n",
+					"    (\"27/10/1\",'Y'),\r\n",
+					"    (\"27/10/16\",'Y'),\r\n",
+					"    (\"27/10\",'Y'),\r\n",
+					"    (\"27/10/99\",'Y'),\r\n",
+					"    (\"27/10/100\",'Y'),\r\n",
+					"    (\"27/10/992\",'Y'),\r\n",
+					"    (\"27/10/2000\",'Y'),\r\n",
+					"    (\"27/10/9999\",'Y'),\r\n",
+					"    (\"27/10/20015\",'Y'), ]\r\n",
+					"date_format = \"dd/MM/yyyy\"\r\n",
+					"\r\n",
+					"temp_df = spark.createDataFrame(data=input_data,schema=schema)\r\n",
+					"\r\n",
+					"df = temp_df.select('*', \r\n",
+					"                f.when(f.date_format(f.to_timestamp(f.col('date'), date_format), date_format).isNotNull(), True).otherwise(False).alias('Date_validation'),\r\n",
+					"                f.date_format(f.to_timestamp(f.col('date'), date_format), date_format).alias('converted_date'),\r\n",
+					"                )\r\n",
+					"df.show(truncate=False)"
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pyspark\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import StructType,StructField, StringType, IntegerType\r\n",
+					"\r\n",
+					"spark = SparkSession.builder.master(\"local[1]\") \\\r\n",
+					"                    .appName('SparkByExamples.com') \\\r\n",
+					"                    .getOrCreate()\r\n",
+					"\r\n",
+					"data = [(\"James\",\"\",\"Smith\",\"36636\",\"M\",3000),\r\n",
+					"    (\"Michael\",\"Rose\",\"\",\"40288\",\"M\",4000),\r\n",
+					"    (\"Robert\",\"\",\"Williams\",\"42114\",\"M\",4000),\r\n",
+					"    (\"Maria\",\"Anne\",\"Jones\",\"39192\",\"F\",4000),\r\n",
+					"    (\"Jen\",\"Mary\",\"Brown\",\"\",\"F\",-1)\r\n",
+					"  ]\r\n",
+					"\r\n",
+					"schema = StructType([ \\\r\n",
+					"    StructField(\"firstname\",StringType(),True), \\\r\n",
+					"    StructField(\"middlename\",StringType(),True), \\\r\n",
+					"    StructField(\"lastname\",StringType(),True), \\\r\n",
+					"    StructField(\"id\", StringType(), True), \\\r\n",
+					"    StructField(\"gender\", StringType(), True), \\\r\n",
+					"    StructField(\"salary\", IntegerType(), True) \\\r\n",
+					"  ])\r\n",
+					" \r\n",
+					"df = spark.createDataFrame(data=data,schema=schema)\r\n",
+					"df.printSchema()\r\n",
+					"df.show(truncate=False)"
+				],
+				"execution_count": 9
+			}
+		]
+	}
+}

@@ -1,5 +1,5 @@
 {
-	"name": "Notebook 2",
+	"name": "csv_validation_v2",
 	"properties": {
 		"nbformat": 4,
 		"nbformat_minor": 2,
@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b33d5bfe-62b7-4396-b77d-90f9a3778824"
+				"spark.autotune.trackingId": "b0315d2b-9621-4237-bebc-fe4525e42070"
 			}
 		},
 		"metadata": {

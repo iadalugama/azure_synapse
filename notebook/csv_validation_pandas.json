@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e4fc5c8b-c977-4484-8b62-835e22066585"
+				"spark.autotune.trackingId": "ead729cc-1855-481c-9e65-279d67390ec4"
 			}
 		},
 		"metadata": {
@@ -77,7 +77,7 @@
 					"df.shape == (2, 22)\r\n",
 					"print(df.describe())"
 				],
-				"execution_count": null
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -95,7 +95,7 @@
 				"source": [
 					"pip install  pandas_schema"
 				],
-				"execution_count": 28
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -127,7 +127,7 @@
 					"\r\n",
 					"print(errors)"
 				],
-				"execution_count": null
+				"execution_count": 7
 			}
 		]
 	}

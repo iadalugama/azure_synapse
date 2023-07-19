@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b5bf6f21-d6e9-43e2-922a-831baeeeca9e"
+				"spark.autotune.trackingId": "9fd94051-2d62-485c-b98f-ceebbf99e6ba"
 			}
 		},
 		"metadata": {
@@ -87,7 +87,7 @@
 					"    StructField(\"corrept_records\", StringType(), True) \\\r\n",
 					"  ])"
 				],
-				"execution_count": 24
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
@@ -109,12 +109,15 @@
 				"source": [
 					"%%pyspark\r\n",
 					"df = spark.read.load('abfss://row-data@generaladls2.dfs.core.windows.net/sample_csv_data/CCS_2023.01 Global Partner Reportingv2.csv', format='csv'\r\n",
-					",mode=\"PERMISSIVE\",schema= csv_schema,columnNameOfCorruptRecord = 'corrept_records'\r\n",
+					",mode=\"PERMISSIVE\",schema= csv_schema,columnNameOfCorruptRecord = 'corrept_records',inferSchema = \"true\"\r\n",
 					", header=True\r\n",
 					")\r\n",
-					"display(df.limit(10))"
+					"display(df.limit(10))\r\n",
+					"\r\n",
+					"\r\n",
+					"#FAILFAST"
 				],
-				"execution_count": 25
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
@@ -202,7 +205,7 @@
 					"                )\r\n",
 					"df.show(truncate=False)"
 				],
-				"execution_count": 20
+				"execution_count": null
 			},
 			{
 				"cell_type": "code",
@@ -246,7 +249,7 @@
 					"df.printSchema()\r\n",
 					"df.show(truncate=False)"
 				],
-				"execution_count": 9
+				"execution_count": 34
 			}
 		]
 	}
